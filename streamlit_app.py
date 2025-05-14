@@ -11,7 +11,7 @@ df = pd.DataFrame(
        {"Formelzeichen": r"\rho_\txt{Wasser}", "Einheit": "g \cdot ml^{-1}"},
    ]
 )
-edited_df = st.data_editor(df)
+edited_df = st.data_editor(df, hide_index=True)
 
 st.write("## Variablen")
 df = pd.DataFrame(
