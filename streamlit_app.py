@@ -114,6 +114,7 @@ if modeV:
 
 if modeC:
 	### Calculating the dumb bitch
+	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
