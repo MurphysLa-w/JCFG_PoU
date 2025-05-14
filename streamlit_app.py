@@ -31,7 +31,7 @@ with st.form("new_score", clear_on_submit=True):
     situps = st.number_input("Situps", key="situps", step=1, value=0, min_value=0)
     st.form_submit_button("Submit", on_click=new_scores)
     
-st.write(st.session_state.keys())
+st.write(st.session_state.scores)
 st.write(st.session_state.scores[0])
 st.write(st.session_state.scores[0]["name"])
 
