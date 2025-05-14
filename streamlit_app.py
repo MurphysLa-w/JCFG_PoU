@@ -30,7 +30,7 @@ modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
 modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
-modeC = st.toggle("Errechneter Wert")
+modeC = st.toggle("Errechneter Fehler")
 
 res_name = str(edited_dfRes.iat[0, 0])
 res_unit = str(edited_dfRes.iat[0, 1])
@@ -114,6 +114,7 @@ if modeV:
 
 if modeC:
 	### Calculating the dumb bitch
+	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
