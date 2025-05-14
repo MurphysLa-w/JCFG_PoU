@@ -31,7 +31,7 @@ modeR = st.toggle("Formel in Rohform")
 modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Wert")
-str(df.at[i, "col"])
+
 res_name = str(edited_dfRes.iat[0, 0])
 res_unit = str(edited_dfRes.iat[0, 1])
 var_names = edited_df["Formelzeichen"].tolist()
