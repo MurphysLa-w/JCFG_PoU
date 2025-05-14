@@ -32,7 +32,7 @@ with st.form("new_score", clear_on_submit=True):
     st.form_submit_button("Submit", on_click=new_scores)
     
 st.write(st.session_state.keys())
-st.write(st.session_state.scores.keys())
+st.write(st.session_state.scores[0])
 st.write(st.session_state.get("scores", "0"))
 
 #if(st.button("Delete")):
