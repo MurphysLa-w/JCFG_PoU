@@ -23,6 +23,14 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
+
+st.write("## Modi")
+modeS = st.toggle("Ableitungen nach allen Variablen")
+modeR = st.toggle("Formel in Rohform")
+modeD = st.toggle("Formel mit Ableitungen")
+modeV = st.toggle("Formel mit Fehlerwerten")
+modeC = st.toggle("Errechneter Wert")
+
 var_names = df["Formelzeichen"].tolist()
 var_units = df["Einheit"].tolist()
 var_values = df["Messwert"].tolist()
