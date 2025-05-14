@@ -65,4 +65,4 @@ if modeS:
 			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		#st.write(PoU_SingleDeriv)
-		st.text(PoU_SingleDeriv)
+		st.latex(PoU_SingleDeriv)
