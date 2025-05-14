@@ -54,6 +54,7 @@ form = parse_latex(formula, backend="lark")
 
 if modeS:
 	### Print the PoU Formula with Derivatives
+	st.subheader("Einzelableitungen")
 	PoU_SingleDeriv = ""
 	for nameChr, name in enumerate(var_names):
 		if var_const[nameChr]:
@@ -64,6 +65,66 @@ if modeS:
 		for nameChr, orgName in enumerate(var_names):
 			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
-		#st.write(PoU_SingleDeriv)
 		st.latex(PoU_SingleDeriv)
 		st.code(PoU_SingleDeriv, language="latex")
+if modeR:
+	### Calculating the Propagation of Uncertainty PoU ###
+	### Print the Raw PoU Formula
+	st.subheader("Rohformel")
+	PoU_Raw = r"\begin{equation}" + res_name + r" = \pm\sqrt{ \begin{split} &"
+	for nameChr, name in enumerate(var_names):
+		if name in var_const: # Dont't derive for constants
+			continue
+		PoU_Raw += r"\left(\frac{\partial " + res_name + r"}{\partial " + name + r"}\Delta " + name + r"\right)^{2} \\ &+ "
+	PoU_Raw = PoU_Raw[:-3] + r"\end{split}}\end{equation}"		# Cut the last three chars ( + ) and add the }
+	st.latex(PoU_Raw)
+	st.code(PoU_Raw, language="latex")
+
+if modeD:
+	### Print the PoU Formula with Derivatives
+	st.subheader("Formel mit Ableitungen")
+	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
+	for nameChr, name in enumerate(var_names):
+		if name in var_const:
+			continue
+		PoU_Diff += r"\left(" + str(latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))) + r"\Delta " + nAdd+chr(nameChr+106) + r"\right)^{2} \\ &+ "
+	PoU_Diff = PoU_Diff[:-3] + "\end{split} }"
+	# Create Copies fo different uses
+	PoU_Val = PoU_Diff
+	PoU_Calc = PoU_Diff
+	
+	# Reintroduce the Original Var Names
+	for nameChr, name in enumerate(var_names):
+		PoU_Diff = PoU_Diff.replace(nAdd+chr(nameChr+106), name)
+	PoU_Diff = r"\begin{equation}" + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
+	st.latex(PoU_Diff)
+	st.code(PoU_Diff, language="latex")
+
+
+if modeV:
+	### Print the PoU Formula with Values
+	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
+	st.subheader("Formel mit Fehlerwerten")
+	for nameChr, name in enumerate(var_names):
+		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+106), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
+		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
+	PoU_Val = r"\begin{equation}"  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
+	st.latex(PoU_Val)
+	st.code(PoU_Val, language="latex")
+
+if modeC:
+	### Calculating the dumb bitch
+	PoU_Calc = PoU_Calc[3:]
+	for nameChr, name in enumerate(var_names):
+		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
+		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
+		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
+	
+	st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
+	st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
+
+
+
+
+
+
