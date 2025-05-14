@@ -51,6 +51,7 @@ for nameChr, name in enumerate(var_names):
 symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr in range(0,len(var_names))}
 
 # Parse from Latex to sympy using the dictionary
+st.write(formula)
 form = parse_latex(formula, backend="lark")
 st.write(form)
 
