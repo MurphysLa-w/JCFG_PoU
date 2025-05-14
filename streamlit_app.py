@@ -43,7 +43,7 @@ var_const = edited_df["Ist Konstant"].tolist()
 
 # Replacing old names for processing
 # Every Name gets a name Addon, defined hereafter to identify it more easily
-nAdd = 'geloc'
+nAdd = 'AvyaKrTa'
 for nameChr, name in enumerate(var_names):
 	if name == None or name == " ":
 		name = " "
@@ -53,7 +53,7 @@ for nameChr, name in enumerate(var_names):
 	if nAdd in name:
 		name = "nope"
 		edited_df.iat[0, nameChr] = "nope"
-		st.error("Glückwunsch. Die Zeichenfolge '" + nAdd + "' ist in Variablen nicht erlaubt. Bitte denke dir etwas anderes aus.", icon="🚨")
+		st.error("Du weißt nichtmal was Sanskrit überhaupt ist. Die Zeichenfolge '" + nAdd + "' ist in Variablen nicht erlaubt, denk dir bitte etwas anderes aus.", icon="🚨")
 	
 	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
@@ -66,10 +66,10 @@ else:
 		form = parse_latex(formula, backend="lark")
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
-	#except UnexpectedCharacters as e:
-		#st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten. {e}", icon="🚨")
-	#except:
-	  #st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
+	except UnexpectedCharacters as e:
+		st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten. {e}", icon="🚨")
+	except:
+	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
 
 
 
