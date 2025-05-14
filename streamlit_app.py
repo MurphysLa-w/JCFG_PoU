@@ -30,8 +30,12 @@ with st.form("new_score", clear_on_submit=True):
     pushups = st.number_input("Pushups", key="pushups", step=1, value=0, min_value=0)
     situps = st.number_input("Situps", key="situps", step=1, value=0, min_value=0)
     st.form_submit_button("Submit", on_click=new_scores)
+    
+st.write(st.session_state.name)
 
 if(st.button("Delete")):
-    del st.session_state["scores"]
+        # Delete all the items in Session state
+    for key in st.session_state.scores():
+        del st.session_state[key]
 
-st.write(st.session_state.scores)
+
