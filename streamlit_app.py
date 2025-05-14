@@ -5,12 +5,12 @@ from sympy.parsing.latex import parse_latex
 
 
 st.write("## Errechnete Größe")
-df = pd.DataFrame(
+dfRes = pd.DataFrame(
     [
        {"Formelzeichen": r"\rho_\txt{Wasser}", "Einheit": "g \cdot ml^{-1}"},
    ]
 )
-edited_df = st.data_editor(df, hide_index=True)
+edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}}")
 
@@ -31,11 +31,11 @@ modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Wert")
 
-var_names = df["Formelzeichen"].tolist()
-var_units = df["Einheit"].tolist()
-var_values = df["Messwert"].tolist()
-var_uncert = df["Fehler"].tolist()
-var_const = df["Ist Konstant"].tolist()
+var_names = edited_df["Formelzeichen"].tolist()
+var_units = edited_df["Einheit"].tolist()
+var_values = edited_df["Messwert"].tolist()
+var_uncert = edited_df["Fehler"].tolist()
+var_const = edited_df["Ist Konstant"].tolist()
 
 # Replacing old names for processing
 # Every Name gets a name Addon, defied hereafter to identify it more easily
