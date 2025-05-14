@@ -55,7 +55,7 @@ symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr
 try:
 	form = parse_latex(formula, backend="lark")
 except UnexpectedEOF:
-	st.error("Eine KLammer wurde geöffnet aber nicht geschlossen", icon="🚨")
+	st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 except UnexpectedCharacters:
 	st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten", icon="🚨")
 except:
