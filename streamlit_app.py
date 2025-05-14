@@ -31,6 +31,8 @@ modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Wert")
 
+res_name = edited_dfRes["Formelzeichen"]
+res_unit = edited_dfRes["Einheit"]
 var_names = edited_df["Formelzeichen"].tolist()
 var_units = edited_df["Einheit"].tolist()
 var_values = edited_df["Messwert"].tolist()
