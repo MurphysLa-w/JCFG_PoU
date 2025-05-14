@@ -4,7 +4,7 @@ from sympy import *
 from sympy.parsing.latex import parse_latex
 
 
-st.write("## Errechnete Größe")
+st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
     [
        {"Formelzeichen": r"\rho_\txt{Wasser}", "Einheit": "g \cdot ml^{-1}"},
@@ -12,9 +12,10 @@ dfRes = pd.DataFrame(
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
+st.subheader("Formel")
 formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}}")
 
-st.write("## Variablen")
+st.subheader("Variablen")
 df = pd.DataFrame(
     [
         {"Formelzeichen": r"m_\txt{Wasser}", "Einheit": "g", "Messwert": 100, "Fehler": 0.1, "Ist Konstant": False},
@@ -24,7 +25,7 @@ df = pd.DataFrame(
 edited_df = st.data_editor(df, num_rows="dynamic")
 
 
-st.write("## Modi")
+st.subheader("Modi")
 modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
 modeD = st.toggle("Formel mit Ableitungen")
@@ -65,3 +66,4 @@ if modeS:
 			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		st.write(PoU_SingleDeriv)
+		st.latex(PoU_SingleDeriv)
