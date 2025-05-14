@@ -47,10 +47,8 @@ nAdd = 'jj'
 for nameChr, name in enumerate(var_names):
 	if name == None:
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
-		break
-	elif name not in formula:
+	if name not in formula:
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
-		break
 	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
 else:
