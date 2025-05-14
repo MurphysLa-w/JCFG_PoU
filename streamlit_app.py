@@ -11,3 +11,4 @@ df = pd.DataFrame(
 edited_df = st.data_editor(df, num_rows="dynamic")
 
 st.write(edited_df.iat[1, 1])
+st.write(edited_df.iat[0, 4])
