@@ -12,7 +12,7 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, hide_index=True)
 
-formula = st.text_input("Formel um Größe zu errechnen:", placeholder=r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}}")
+formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}}")
 
 st.write("## Variablen")
 df = pd.DataFrame(
