@@ -41,25 +41,33 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-
 # Replacing old names for processing
 # Every Name gets a name Addon, defied hereafter to identify it more easily
 nAdd = 'jj'
 for nameChr, name in enumerate(var_names):
-	formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
+	if name == None:
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
+		break
+	elif name not in formula:
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+		break
+	else:
+		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
+else:
+	# Process Names are put in a dictionary
+	symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr in range(0,len(var_names))}
 
-# Process Names are put in a dictionary
-symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr in range(0,len(var_names))}
+	# Parse from Latex to sympy using the dictionary
+	try:
+		form = parse_latex(formula, backend="lark")
+	except UnexpectedEOF:
+		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
+	except UnexpectedCharacters:
+		st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten", icon="🚨")
+	except:
+	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
 
-# Parse from Latex to sympy using the dictionary
-try:
-	form = parse_latex(formula, backend="lark")
-except UnexpectedEOF:
-	st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
-except UnexpectedCharacters:
-	st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten", icon="🚨")
-except:
-  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
+
 
 
 
@@ -70,10 +78,6 @@ modeR = st.toggle("Formel in Rohform")
 modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Fehler")
-
-
-
-
 
 if modeS:
 	### Print the PoU Formula with Derivatives
@@ -146,9 +150,3 @@ if modeC:
 	
 	st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
 	st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
-
-
-
-
-
-
