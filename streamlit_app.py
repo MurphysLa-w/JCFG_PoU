@@ -32,4 +32,6 @@ with st.form("new_score", clear_on_submit=True):
     st.form_submit_button("Submit", on_click=new_scores)
 
 if(st.button("Delete")):
-    del st.session_state[1]
+    del st.session_state["scores"]
+
+st.write(st.session_state.scores)
