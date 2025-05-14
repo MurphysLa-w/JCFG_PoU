@@ -88,7 +88,7 @@ if modeD:
 		if name in var_const:
 			continue
 		PoU_Diff += r"\left(" + str(latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))) + r"\Delta " + nAdd+chr(nameChr+106) + r"\right)^{2} \\ &+ "
-	PoU_Diff = PoU_Diff[:-3] + "\end{split} }"
+	PoU_Diff = PoU_Diff[:-7] + "\end{split} }"
 	# Create Copies fo different uses
 	PoU_Val = PoU_Diff
 	PoU_Calc = PoU_Diff
@@ -114,7 +114,6 @@ if modeV:
 
 if modeC:
 	### Calculating the dumb bitch
-	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
