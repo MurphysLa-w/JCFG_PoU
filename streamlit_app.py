@@ -3,6 +3,8 @@ import pandas as pd
 from sympy import *
 from sympy.parsing.latex import parse_latex
 
+st.set_page_config(page_title="JCFG_PoU", page_icon="🔥",)
+
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
@@ -16,6 +18,8 @@ edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 st.subheader("Formel")
 formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
+
+st.latex(formula)
 
 st.subheader("Variablen")
 df = pd.DataFrame(
