@@ -44,7 +44,6 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Every Name gets a name Addon, defied hereafter to identify it more easily
 nAdd = 'jj'
 for nameChr, name in enumerate(var_names):
-	nameChr += 1
 	formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
 
 # Process Names are put in a dictionary
