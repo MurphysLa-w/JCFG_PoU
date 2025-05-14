@@ -1,27 +1,21 @@
 import pandas as pd
 import streamlit as st
 
+# Initial scorecard dataframe
+scorecard = pd.DataFrame(columns=['User', 'Pushups', 'Pullups', 'Totaled'])
 
-df = pd.DataFrame({
-    'Title': ['A', 'B', 'Total'],
-    'Row1': [0, 0, 0],
-    'Row2': [0, 0, 0]
-})
+# Input your data using experimental data editor
+st.write("Input your data below:")
+input_data = pd.DataFrame(index=[0], columns=['User', 'Pushups', 'Pullups'])
+input_data = input_data.fillna(0)  # fill with zeros
 
+edited_data = st.experimental_data_editor(input_data)
 
-# Getting user input
-input_A = st.number_input('Input for A', value=0.0)
-input_B = st.number_input('Input for B', value=0.0)
+# Handle user input
+if st.button('Submit'):
+    edited_data['Totaled'] = edited_data['Pushups'] + edited_data['Pullups']
+    scorecard = scorecard.append(edited_data, ignore_index=True)
 
-# Update dataframe with user input
-df.at[0, 'Row1'] = input_A
-df.at[1, 'Row1'] = input_B
-df.at[0, 'Row2'] = input_A
-df.at[1, 'Row2'] = input_B
-
-# Recalculate the Total column
-df.at[2, 'Row1'] = df['Row1'].sum()
-df.at[2, 'Row2'] = df['Row2'].sum()
-
-# Display the updated dataframe
-st.table(df.set_index('Title'))
+# Display the updated scorecard
+st.write("Updated Scorecard:")
+st.table(scorecard)
