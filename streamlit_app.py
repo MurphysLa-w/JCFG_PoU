@@ -79,12 +79,9 @@ else:
 st.subheader("Modi")
 modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
-if modeR:
-	modeD = st.toggle("Formel mit Ableitungen")
-	if modeD:
-		modeV = st.toggle("Formel mit Fehlerwerten")
-		if modeV:
-			modeC = st.toggle("Errechneter Fehler")
+modeD = st.toggle("Formel mit Ableitungen")
+modeV = st.toggle("Formel mit Fehlerwerten")
+modeC = st.toggle("Errechneter Fehler")
 
 if modeS:
 	### Print the PoU Formula with Derivatives
@@ -114,7 +111,7 @@ if modeR:
 	st.latex(PoU_Raw)
 	st.code(PoU_Raw, language="latex")
 
-if modeD:
+if modeD or modeV or modeC:
 	### Print the PoU Formula with Derivatives
 	st.subheader("Formel mit Ableitungen")
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
@@ -131,8 +128,9 @@ if modeD:
 	for nameChr, name in enumerate(var_names):
 		PoU_Diff = PoU_Diff.replace(nAdd+chr(nameChr+106), name)
 	PoU_Diff = r"\begin{equation}" + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
-	st.latex(PoU_Diff)
-	st.code(PoU_Diff, language="latex")
+	if modeD:
+		st.latex(PoU_Diff)
+		st.code(PoU_Diff, language="latex")
 
 
 if modeV:
