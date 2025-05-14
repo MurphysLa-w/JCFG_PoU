@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 
+
+st.write("# Variablen")
 df = pd.DataFrame(
     [
-       {"command": "st.selectbox", "rating": 4, "is_widget": True},
-       {"command": "st.balloons", "rating": 5, "is_widget": False},
-       {"command": "st.time_input", "rating": 3, "is_widget": True},
+       {"Formelzeichen": "m_\txt{Wasser}", "Einheit": "g", "Messwert": 16.8, "Fehler": 0.01, "Ist Konstant": True},
    ]
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
+st.write(edited_df[0]["Formelzeichen"])
