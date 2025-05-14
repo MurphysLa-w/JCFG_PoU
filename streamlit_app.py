@@ -79,9 +79,12 @@ else:
 st.subheader("Modi")
 modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
-modeD = st.toggle("Formel mit Ableitungen")
-modeV = st.toggle("Formel mit Fehlerwerten")
-modeC = st.toggle("Errechneter Fehler")
+if modeR:
+	modeD = st.toggle("Formel mit Ableitungen")
+if modeD:
+	modeV = st.toggle("Formel mit Fehlerwerten")
+if modeV:
+	modeC = st.toggle("Errechneter Fehler")
 
 if modeS:
 	### Print the PoU Formula with Derivatives
