@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from sympy import *
 from sympy.parsing.latex import parse_latex
-from lark.exceptions import UnexpectedEOF
+from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
 st.set_page_config(page_title="JCFG",)
 
@@ -31,22 +31,6 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
-
-st.subheader("Modi")
-modeS = st.toggle("Ableitungen nach allen Variablen")
-modeR = st.toggle("Formel in Rohform")
-modeD = st.toggle("Formel mit Ableitungen")
-modeV = st.toggle("Formel mit Fehlerwerten")
-modeC = st.toggle("Errechneter Fehler")
-
-res_name = str(edited_dfRes.iat[0, 0])
-res_unit = str(edited_dfRes.iat[0, 1])
-var_names = edited_df["Formelzeichen"].tolist()
-var_units = edited_df["Einheit"].tolist()
-var_values = edited_df["Messwert"].tolist()
-var_uncert = edited_df["Fehler"].tolist()
-var_const = edited_df["Ist Konstant"].tolist()
-
 # Replacing old names for processing
 # Every Name gets a name Addon, defied hereafter to identify it more easily
 nAdd = 'jj'
@@ -65,6 +49,22 @@ except UnexpectedCharacters:
 	st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten", icon="🚨")
 except:
   st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
+
+
+st.subheader("Modi")
+modeS = st.toggle("Ableitungen nach allen Variablen")
+modeR = st.toggle("Formel in Rohform")
+modeD = st.toggle("Formel mit Ableitungen")
+modeV = st.toggle("Formel mit Fehlerwerten")
+modeC = st.toggle("Errechneter Fehler")
+
+res_name = str(edited_dfRes.iat[0, 0])
+res_unit = str(edited_dfRes.iat[0, 1])
+var_names = edited_df["Formelzeichen"].tolist()
+var_units = edited_df["Einheit"].tolist()
+var_values = edited_df["Messwert"].tolist()
+var_uncert = edited_df["Fehler"].tolist()
+var_const = edited_df["Ist Konstant"].tolist()
 
 if modeS:
 	### Print the PoU Formula with Derivatives
