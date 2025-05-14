@@ -45,13 +45,13 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Every Name gets a name Addon, defied hereafter to identify it more easily
 nAdd = 'jj'
 for nameChr, name in enumerate(var_names):
-	try:
-		if name not in formula:
-			st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
-	except:
-		var_names[nameChr] = ""
+	if name == None or name == " ":
+		name = " "
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
-		
+		st.write(name)
+	if name not in formula:
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
 else:
 	# Process Names are put in a dictionary
