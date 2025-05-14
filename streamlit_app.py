@@ -7,19 +7,19 @@ from sympy.parsing.latex import parse_latex
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
     [
-       {"Formelzeichen": r"\rho_\txt{Wasser}", "Einheit": "g \cdot ml^{-1}"},
+       {"Formelzeichen": r"\rho_\text{Wasser}", "Einheit": "g \cdot ml^{-1}"},
    ]
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 st.subheader("Formel")
-formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}}")
+formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
 
 st.subheader("Variablen")
 df = pd.DataFrame(
     [
-        {"Formelzeichen": r"m_\txt{Wasser}", "Einheit": "g", "Messwert": 100, "Fehler": 0.1, "Ist Konstant": False},
-        {"Formelzeichen": r"V_\txt{Wasser}", "Einheit": "ml", "Messwert": 100, "Fehler": 0.01, "Ist Konstant": False},
+        {"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100, "Fehler": 0.1, "Ist Konstant": False},
+        {"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100, "Fehler": 0.01, "Ist Konstant": False},
    ]
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
