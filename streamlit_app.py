@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from sympy import *
 from sympy.parsing.latex import parse_latex
+import lark.exceptions
 
 st.set_page_config(page_title="JCFG",)
 
