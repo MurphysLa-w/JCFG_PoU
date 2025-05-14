@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-
-
-st.text_input("Formula:", placeholder=r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}")
+from sympy import *
+from sympy.parsing.latex import parse_latex
 
 
 st.write("## Errechnete Größe")
@@ -13,6 +12,8 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, hide_index=True)
 
+formula = st.text_input("Formel um Größe zu errechnen:", placeholder=r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}")
+
 st.write("## Variablen")
 df = pd.DataFrame(
     [
@@ -22,3 +23,11 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
+var_names = df["Formelzeichen"].tolist()
+var_units = df["Einheit"].tolist()
+var_values = df["Messwert"].tolist()
+var_uncert = df["Fehler"].tolist()
+var_const = df["Ist Konstant"].tolist()
+
+st.write(var_names)
+st.write(var_const)
