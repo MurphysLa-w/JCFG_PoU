@@ -42,15 +42,17 @@ var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
 # Replacing old names for processing
-# Every Name gets a name Addon, defied hereafter to identify it more easily
-nAdd = 'jj'
+# Every Name gets a name Addon, defined hereafter to identify it more easily
+nAdd = 'ĵîĵ'
 for nameChr, name in enumerate(var_names):
 	if name == None or name == " ":
 		name = " "
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
-		st.write(name)
 	if name not in formula:
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+	if "ĵîĵ" in name:
+		st.error("Die Zeichenfolge 'ĵîĵ' ist in Variablen nicht erlaubt. Warum probierst du sowas überhaupt aus?!!", icon="🚨")
+	
 	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
 else:
