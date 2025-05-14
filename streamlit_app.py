@@ -9,6 +9,7 @@ st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
+
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
     [
@@ -17,10 +18,11 @@ dfRes = pd.DataFrame(
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
+
 st.subheader("Formel")
 formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
-
 st.latex(formula)
+
 
 st.subheader("Variablen")
 df = pd.DataFrame(
@@ -30,6 +32,15 @@ df = pd.DataFrame(
    ]
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
+
+res_name = str(edited_dfRes.iat[0, 0])
+res_unit = str(edited_dfRes.iat[0, 1])
+var_names = edited_df["Formelzeichen"].tolist()
+var_units = edited_df["Einheit"].tolist()
+var_values = edited_df["Messwert"].tolist()
+var_uncert = edited_df["Fehler"].tolist()
+var_const = edited_df["Ist Konstant"].tolist()
+
 
 # Replacing old names for processing
 # Every Name gets a name Addon, defied hereafter to identify it more easily
@@ -51,6 +62,8 @@ except:
   st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
 
 
+
+
 st.subheader("Modi")
 modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
@@ -58,13 +71,9 @@ modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Fehler")
 
-res_name = str(edited_dfRes.iat[0, 0])
-res_unit = str(edited_dfRes.iat[0, 1])
-var_names = edited_df["Formelzeichen"].tolist()
-var_units = edited_df["Einheit"].tolist()
-var_values = edited_df["Messwert"].tolist()
-var_uncert = edited_df["Fehler"].tolist()
-var_const = edited_df["Ist Konstant"].tolist()
+
+
+
 
 if modeS:
 	### Print the PoU Formula with Derivatives
