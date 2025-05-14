@@ -60,7 +60,6 @@ if modeS:
 	### Print the PoU Formula with Derivatives
 	PoU_SingleDeriv = ""
 	for nameChr, name in enumerate(var_names):
-		nameChr += 1
 		if name in var_const:
 			continue
 		PoU_SingleDeriv = latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))
