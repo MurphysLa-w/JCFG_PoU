@@ -56,7 +56,14 @@ for nameChr, name in enumerate(var_names):
 symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr in range(0,len(var_names))}
 
 # Parse from Latex to sympy using the dictionary
-form = parse_latex(formula, backend="lark")
+try:
+	form = parse_latex(formula, backend="lark")
+except UnexpectedEOF:
+	st.error("Eine KLammer wurde geöffnet aber nicht geschlossen", icon="🚨")
+except UnexpectedCharacters:
+	st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten", icon="🚨")
+except:
+  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
 
 if modeS:
 	### Print the PoU Formula with Derivatives
