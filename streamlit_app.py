@@ -12,7 +12,7 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, hide_index=True)
 
-formula = st.text_input("Formel um Größe zu errechnen:", placeholder=r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}")
+formula = st.text_input("Formel um Größe zu errechnen:", placeholder=r"\frac{m_\txt{Wasser}}{V_\txt{Wasser}}")
 
 st.write("## Variablen")
 df = pd.DataFrame(
@@ -52,6 +52,7 @@ symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr
 
 # Parse from Latex to sympy using the dictionary
 st.write(formula)
+st.write(symbol_dict)
 form = parse_latex(formula, backend="lark")
 st.write(form)
 
