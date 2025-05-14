@@ -10,4 +10,4 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
-st.write(edited_df[0]["Formelzeichen"])
+st.write(st.session_state.scores)
