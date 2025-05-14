@@ -37,9 +37,6 @@ var_values = df["Messwert"].tolist()
 var_uncert = df["Fehler"].tolist()
 var_const = df["Ist Konstant"].tolist()
 
-st.write(var_names)
-st.write(var_const)
-
 # Replacing old names for processing
 # Every Name gets a name Addon, defied hereafter to identify it more easily
 nAdd = 'jj'
@@ -51,10 +48,7 @@ for nameChr, name in enumerate(var_names):
 symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr in range(0,len(var_names))}
 
 # Parse from Latex to sympy using the dictionary
-st.write(formula)
-st.write(symbol_dict)
 form = parse_latex(formula, backend="lark")
-st.write(form)
 
 if modeS:
 	### Print the PoU Formula with Derivatives
@@ -69,4 +63,4 @@ if modeS:
 			nameChr += 1
 			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + var_names[0] + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
-		print(PoU_SingleDeriv + "\n")
+		st.print(PoU_SingleDeriv)
