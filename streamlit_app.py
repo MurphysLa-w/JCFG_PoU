@@ -3,6 +3,8 @@ import pandas as pd
 from sympy import *
 from sympy.parsing.latex import parse_latex
 
+st.title("Fehlerfortpflanzung nach Gauß")
+st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
@@ -73,7 +75,7 @@ if modeR:
 	st.subheader("Rohformel")
 	PoU_Raw = r"\begin{equation}" + res_name + r" = \pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
-		if name in var_const: # Dont't derive for constants
+		if var_const[nameChr]: # Dont't derive for constants
 			continue
 		PoU_Raw += r"\left(\frac{\partial " + res_name + r"}{\partial " + name + r"}\Delta " + name + r"\right)^{2} \\ &+ "
 	PoU_Raw = PoU_Raw[:-3] + r"\end{split}}\end{equation}"		# Cut the last three chars ( + ) and add the }
@@ -85,7 +87,7 @@ if modeD:
 	st.subheader("Formel mit Ableitungen")
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
-		if name in var_const:
+		if var_const[nameChr]:
 			continue
 		PoU_Diff += r"\left(" + str(latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))) + r"\Delta " + nAdd+chr(nameChr+106) + r"\right)^{2} \\ &+ "
 	PoU_Diff = PoU_Diff[:-7] + "\end{split} }"
