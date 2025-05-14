@@ -33,7 +33,7 @@ with st.form("new_score", clear_on_submit=True):
     
 st.write(st.session_state.keys())
 st.write(st.session_state.scores[0])
-st.write(st.session_state.get("scores", "0"))
+st.write(st.session_state.scores[0][0])
 
 #if(st.button("Delete")):
 #       # Delete all the items in Session state
