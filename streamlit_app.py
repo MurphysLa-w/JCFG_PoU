@@ -113,7 +113,6 @@ if modeR:
 
 if modeD or modeV or modeC:
 	### Print the PoU Formula with Derivatives
-	st.subheader("Formel mit Ableitungen")
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
 		if var_const[nameChr]:
@@ -129,6 +128,7 @@ if modeD or modeV or modeC:
 		PoU_Diff = PoU_Diff.replace(nAdd+chr(nameChr+106), name)
 	PoU_Diff = r"\begin{equation}" + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
 	if modeD:
+		st.subheader("Formel mit Ableitungen")
 		st.latex(PoU_Diff)
 		st.code(PoU_Diff, language="latex")
 
