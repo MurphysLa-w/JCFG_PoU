@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from sympy import *
+import sympy
 from sympy.parsing.latex import parse_latex
 
 
