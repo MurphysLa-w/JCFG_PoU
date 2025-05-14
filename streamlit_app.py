@@ -63,4 +63,4 @@ if modeS:
 			nameChr += 1
 			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + var_names[0] + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
-		st.print(PoU_SingleDeriv)
+		st.write(PoU_SingleDeriv)
