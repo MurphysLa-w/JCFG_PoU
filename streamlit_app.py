@@ -56,13 +56,12 @@ if modeS:
 	### Print the PoU Formula with Derivatives
 	PoU_SingleDeriv = ""
 	for nameChr, name in enumerate(var_names):
-		if name in var_const:
+		if var_const[nameChr]:
 			continue
 		PoU_SingleDeriv = latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))
 		
 		# Reintroduce the Original Var Names
 		for nameChr, orgName in enumerate(var_names):
-			nameChr += 1
 			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
-		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + var_names[0] + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
+		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		st.write(PoU_SingleDeriv)
