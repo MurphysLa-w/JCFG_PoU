@@ -10,7 +10,7 @@ st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
 if True:
-	TOKEN_LIST = st.secrets["token_list"].tolist()
+	TOKEN_LIST = st.secrets["token_list"]
 	ACTIVE = st.text_input("Token:", "...") in TOKEN_LIST
 	if not ACTIVE:
 		st.warning("Token benötigt", icon="⚠️")
