@@ -14,7 +14,6 @@ if True:
 	ACTIVE = st.text_input("Token:", "...") in TOKEN_LIST
 	if not ACTIVE:
 		st.warning("Token benötigt", icon="⚠️")
-	st.session_state
 else:
 	ACTIVE = True
 
