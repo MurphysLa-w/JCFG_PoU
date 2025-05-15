@@ -9,6 +9,8 @@ st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
+ACTIVE = st.text_input("Token:", placeholder="...") == st.secrets["GLOBAL"]
+
 
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
@@ -33,13 +35,14 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
-res_name = str(edited_dfRes.iat[0, 0])
-res_unit = str(edited_dfRes.iat[0, 1])
-var_names = edited_df["Formelzeichen"].tolist()
-var_units = edited_df["Einheit"].tolist()
-var_values = edited_df["Messwert"].tolist()
-var_uncert = edited_df["Fehler"].tolist()
-var_const = edited_df["Ist Konstant"].tolist()
+if ACTIVE:
+	res_name = str(edited_dfRes.iat[0, 0])
+	res_unit = str(edited_dfRes.iat[0, 1])
+	var_names = edited_df["Formelzeichen"].tolist()
+	var_units = edited_df["Einheit"].tolist()
+	var_values = edited_df["Messwert"].tolist()
+	var_uncert = edited_df["Fehler"].tolist()
+	var_const = edited_df["Ist Konstant"].tolist()
 
 # Replacing old names for processing
 # Every Name gets a name Addon, defined hereafter to identify it more easily
