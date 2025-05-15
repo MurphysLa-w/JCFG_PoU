@@ -12,6 +12,8 @@ st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 ACTIVE = False
 if not ACTIVE:
 	ACTIVE = st.text_input("Token:", placeholder="...") == st.secrets["db_username"]
+else:
+	st.write("ACTIVE")
 
 
 st.subheader("Errechnete Größe")
@@ -88,7 +90,7 @@ if ACTIVE:
 	modeV = st.toggle("Formel mit Fehlerwerten")
 	modeC = st.toggle("Errechneter Fehler")
 else:
-	modeS, modeR, modeD, modeV, modeC = False
+	modeS = modeR = modeD = modeV = modeC = False
 
 if modeS:
 	### Print the PoU Formula with Derivatives
