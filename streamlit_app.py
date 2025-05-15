@@ -7,8 +7,7 @@ from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 st.set_page_config(page_title="JCFG",)
 
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V 1.0.1")
-st.text("Fehlerrechner von LaTex, nach LaTex.")
+st.text("V 1.0.1 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
 # Result Input
