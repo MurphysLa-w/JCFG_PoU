@@ -10,9 +10,12 @@ st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
 if True:
-	ACTIVE = st.text_input("Token:", "...") in st.secrets["db_username"]
+	TOKEN_LIST = st.secrets["token_list"].tolist()
+	ACTIVE = st.text_input("Token:", "...") in TOKEN_LIST
 	if not ACTIVE:
 		st.warning("Token benötigt", icon="⚠️")
+	TOKEN_LIST
+	st.session_state
 else:
 	ACTIVE = True
 
