@@ -143,7 +143,7 @@ if modeV:
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
 	if "nan" in PoU_Val:
-		st.warning("Nan in der Formel gefunden! Sind alle Messwerte ausgefüllt?", icon="🚨")
+		st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen.", icon="⚠️")
 
 
 if modeC:
