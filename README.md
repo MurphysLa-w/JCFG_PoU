@@ -15,4 +15,4 @@ Open the App under:
 - Calculates the final Uncertainty
 - Outputs are formatted and split for readability
 
-Disclaimer: Bullshit in, Bullshit out
+Disclaimer: Bullshit in, Bullshit out. Do your own Calculations
