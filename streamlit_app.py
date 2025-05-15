@@ -7,9 +7,11 @@ from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 st.set_page_config(page_title="JCFG",)
 
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("Fehlerrechner von LaTex in LaTex.")
-st.text("DISCLAIMER: Bullshit In, Bullshit Out")
+st.text("V 1.0.1")
+st.text("Fehlerrechner von LaTex, nach LaTex.")
+st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
+# Result Input
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
     [
@@ -18,12 +20,12 @@ dfRes = pd.DataFrame(
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
-
+# Formula Input
 st.subheader("Formel")
 formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
 st.latex(formula)
 
-
+# Table for Var Input
 st.subheader("Variablen")
 df = pd.DataFrame(
     [
@@ -33,6 +35,7 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
+# Retrieve the User Input
 res_name = str(edited_dfRes.iat[0, 0])
 res_unit = str(edited_dfRes.iat[0, 1])
 var_names = edited_df["Formelzeichen"].tolist()
@@ -42,7 +45,8 @@ var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
 # Replacing old names for processing
-# Every Name gets a name Addon, defined hereafter to identify it more easily
+# Every Name gets a name Addon nAdd, defined hereafter to identify it more easily and to enable complicatd Variable names without messing with Lark Translator
+# Most of the error hadling happens here
 nAdd = 'AvyaKrTa'
 for nameChr, name in enumerate(var_names):
 	if name == None or name == " ":
@@ -75,7 +79,7 @@ if var_const.count(True) == len(var_names):
 
 
 
-
+# Mode Selector
 st.subheader("Modi")
 modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
@@ -111,7 +115,7 @@ if modeR:
 	st.latex(PoU_Raw)
 	st.code(PoU_Raw, language="latex")
 
-if (modeD or modeV or modeC):
+if (modeD or modeV or modeC): # Required for V, C
 	### Print the PoU Formula with Derivatives
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
@@ -148,7 +152,7 @@ if modeV:
 
 
 if modeC:
-	### Calculating the dumb bitch
+	### Calculate the Uncertainty
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
