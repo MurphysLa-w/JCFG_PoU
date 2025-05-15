@@ -9,15 +9,6 @@ st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
-if True:
-	TOKEN_LIST = st.secrets["token_list"]
-	ACTIVE = st.text_input("Token:", "...") in TOKEN_LIST
-	if not ACTIVE:
-		st.warning("Token benötigt", icon="⚠️")
-else:
-	ACTIVE = True
-
-
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
     [
@@ -91,7 +82,7 @@ modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Fehler")
 
-if modeS and ACTIVE:
+if modeS:
 	### Print the PoU Formula with Derivatives
 	st.subheader("Einzelableitungen")
 	PoU_SingleDeriv = ""
@@ -106,7 +97,7 @@ if modeS and ACTIVE:
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		st.latex(PoU_SingleDeriv)
 		st.code(PoU_SingleDeriv, language="latex")
-if modeR and ACTIVE:
+if modeR:
 	### Calculating the Propagation of Uncertainty PoU ###
 	### Print the Raw PoU Formula
 	st.subheader("Rohformel")
@@ -119,7 +110,7 @@ if modeR and ACTIVE:
 	st.latex(PoU_Raw)
 	st.code(PoU_Raw, language="latex")
 
-if (modeD or modeV or modeC) and ACTIVE:
+if (modeD or modeV or modeC):
 	### Print the PoU Formula with Derivatives
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
@@ -141,7 +132,7 @@ if (modeD or modeV or modeC) and ACTIVE:
 		st.code(PoU_Diff, language="latex")
 
 
-if modeV and ACTIVE:
+if modeV:
 	### Print the PoU Formula with Values
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
@@ -155,7 +146,7 @@ if modeV and ACTIVE:
 		st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen.", icon="⚠️")
 
 
-if modeC and ACTIVE:
+if modeC:
 	### Calculating the dumb bitch
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
