@@ -70,7 +70,7 @@ else:
 	except:
 	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
-if len(var_const) == len(var_names):
+if var_const.count(True) == len(var_names):
 	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
 
 
