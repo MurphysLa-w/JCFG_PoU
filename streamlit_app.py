@@ -9,11 +9,7 @@ st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
-ACTIVE = False
-if not ACTIVE:
-	ACTIVE = st.text_input("Token:", placeholder="...") == st.secrets["db_username"]
-else:
-	st.write("ACTIVE")
+ACTIVE = st.text_input("Token:", "...") in st.secrets["db_username"]
 
 
 st.subheader("Errechnete Größe")
@@ -82,17 +78,14 @@ if var_const.count(True) == len(var_names):
 
 
 
-if ACTIVE:
-	st.subheader("Modi")
-	modeS = st.toggle("Ableitungen nach allen Variablen")
-	modeR = st.toggle("Formel in Rohform")
-	modeD = st.toggle("Formel mit Ableitungen")
-	modeV = st.toggle("Formel mit Fehlerwerten")
-	modeC = st.toggle("Errechneter Fehler")
-else:
-	modeS = modeR = modeD = modeV = modeC = False
+st.subheader("Modi")
+modeS = st.toggle("Ableitungen nach allen Variablen")
+modeR = st.toggle("Formel in Rohform")
+modeD = st.toggle("Formel mit Ableitungen")
+modeV = st.toggle("Formel mit Fehlerwerten")
+modeC = st.toggle("Errechneter Fehler")
 
-if modeS:
+if modeS and ACTIVE:
 	### Print the PoU Formula with Derivatives
 	st.subheader("Einzelableitungen")
 	PoU_SingleDeriv = ""
@@ -107,7 +100,7 @@ if modeS:
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		st.latex(PoU_SingleDeriv)
 		st.code(PoU_SingleDeriv, language="latex")
-if modeR:
+if modeR and ACTIVE:
 	### Calculating the Propagation of Uncertainty PoU ###
 	### Print the Raw PoU Formula
 	st.subheader("Rohformel")
@@ -120,7 +113,7 @@ if modeR:
 	st.latex(PoU_Raw)
 	st.code(PoU_Raw, language="latex")
 
-if modeD or modeV or modeC:
+if (modeD or modeV or modeC) and ACTIVE:
 	### Print the PoU Formula with Derivatives
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
@@ -142,7 +135,7 @@ if modeD or modeV or modeC:
 		st.code(PoU_Diff, language="latex")
 
 
-if modeV:
+if modeV and ACTIVE:
 	### Print the PoU Formula with Values
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
@@ -156,7 +149,7 @@ if modeV:
 		st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen.", icon="⚠️")
 
 
-if modeC:
+if modeC and ACTIVE:
 	### Calculating the dumb bitch
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
