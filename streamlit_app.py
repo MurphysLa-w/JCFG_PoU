@@ -27,8 +27,8 @@ st.latex(formula)
 st.subheader("Variablen")
 df = pd.DataFrame(
     [
-        {"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100, "Fehler": 0.1, "Ist Konstant": False},
-        {"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100, "Fehler": 0.01, "Ist Konstant": False},
+        {"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100.0, "Fehler": 0.1, "Ist Konstant": False},
+        {"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100.0, "Fehler": 0.01, "Ist Konstant": False},
    ]
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
@@ -54,7 +54,6 @@ for nameChr, name in enumerate(var_names):
 		name = "nope"
 		edited_df.iat[0, nameChr] = "nope"
 		st.error("Du weißt nichtmal was Sanskrit überhaupt ist. Die Zeichenfolge '" + nAdd + "' ist in Variablen nicht erlaubt, denk dir bitte etwas anderes aus.", icon="🚨")
-	
 	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
 else:
@@ -67,9 +66,9 @@ else:
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-		st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, \n falsch geschrieben wurden oder nicht als Variable in der Tabelle maskiert wurden. \n Durchsuche deine Formel und entferne diese Stellen oder trage sie ein, falls sie Teil einer Variable sein sollten. {e}", icon="🚨")
+		st.error("Die Formel enthält Abschnitte die entweder rein formativ sind, falsch geschrieben wurden oder nicht/falsch als Variable in der Tabelle maskiert wurden. Überprüfe Formel und Variablen nocheinmal. {e}", icon="🚨")
 	except:
-	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein das sie Fehler enthält", icon="🚨")
+	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
 
 
@@ -138,6 +137,8 @@ if modeV:
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
+		if str(var_uncert[nameChr]) == None or str(var_values[nameChr]) == None:
+			st.error("Messwerte oder Fehlerwerte fehlen oder können nicht verarbeitet werden!", icon="🚨")
 		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+106), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation}"  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
@@ -149,9 +150,14 @@ if modeC:
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
+		if str(var_uncert[nameChr]) == None or str(var_values[nameChr]) == None:
+			st.error("Messwerte oder Fehlerwerte fehlen oder können nicht verarbeitet werden!", icon="🚨")
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
-	
-	st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
-	st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
+
+	try:
+		st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
+		st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
+	except:
+		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
