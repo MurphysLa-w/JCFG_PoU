@@ -9,7 +9,7 @@ st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out")
 
-ACTIVE = st.text_input("Token:", placeholder="...") == st.secrets.global
+ACTIVE = st.text_input("Token:", placeholder="...") == st.secrets["db_username"]
 
 
 st.subheader("Errechnete Größe")
