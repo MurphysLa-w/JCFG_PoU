@@ -137,23 +137,20 @@ if modeV:
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
-		if str(var_uncert[nameChr]) == None or str(var_values[nameChr]) == None:
-			st.error("Messwerte oder Fehlerwerte fehlen oder können nicht verarbeitet werden!", icon="🚨")
-			break
 		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+106), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation}"  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
+	if "nan" in PoU_Val:
+		st.warning("Nan in der Formel gefunden! Sind alle Messwerte ausgefüllt?", icon="🚨")
+
 
 if modeC:
 	### Calculating the dumb bitch
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
-		if str(var_uncert[nameChr]) == None or str(var_values[nameChr]) == None:
-			st.error("Messwerte oder Fehlerwerte fehlen oder können nicht verarbeitet werden!", icon="🚨")
-			break
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
@@ -161,5 +158,8 @@ if modeC:
 	try:
 		st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
 		st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
+		if str(parse_latex(PoU_Calc, backend="lark")) == "nan":
+			st.error("Division durch Null", icon="🚨")
+
 	except:
 		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
