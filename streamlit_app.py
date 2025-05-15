@@ -139,6 +139,7 @@ if modeV:
 	for nameChr, name in enumerate(var_names):
 		if str(var_uncert[nameChr]) == None or str(var_values[nameChr]) == None:
 			st.error("Messwerte oder Fehlerwerte fehlen oder können nicht verarbeitet werden!", icon="🚨")
+			break
 		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+106), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation}"  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
@@ -152,6 +153,7 @@ if modeC:
 	for nameChr, name in enumerate(var_names):
 		if str(var_uncert[nameChr]) == None or str(var_values[nameChr]) == None:
 			st.error("Messwerte oder Fehlerwerte fehlen oder können nicht verarbeitet werden!", icon="🚨")
+			break
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
