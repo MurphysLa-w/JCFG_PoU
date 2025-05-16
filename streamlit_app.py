@@ -7,7 +7,7 @@ from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 st.set_page_config(page_title="JCFG",)
 
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V 1.0.1 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V 1.0.2 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
 # Result Input
@@ -69,7 +69,7 @@ else:
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe um: " + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):], icon="🚨")
+		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
 	except:
 	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
