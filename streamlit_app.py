@@ -69,7 +69,7 @@ else:
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-		st.error("Die Formel enthält Abschnitte die entweder \n rein formativ sind, falsch geschrieben wurden oder nicht/falsch als Variable in der Tabelle maskiert wurden. Überprüfe Formel und Variablen nocheinmal.", icon="🚨")
+		st.error("Die Formel enthält Abschnitte die entweder \n\n rein formativ sind, falsch geschrieben wurden oder nicht/falsch als Variable in der Tabelle maskiert wurden. Überprüfe Formel und Variablen nocheinmal.", icon="🚨")
 		st.error(str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):], icon="🚨")
 	except:
 	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
