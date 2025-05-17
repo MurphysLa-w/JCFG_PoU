@@ -46,9 +46,10 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the hasErroror handling happens here
-nAdd = 'tacit'
-#blackList = var_names
-#blackList.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
+nAdd = "tacit"
+blackList = var_names
+blackList.append(nAdd)
+blackList.append(["cdot", "frac", "mathit"])
 hasError = False # This Blocks the Process if hasErrorors have been made, so that no exceptions are thrown
 for nameChr, name in enumerate(var_names):
 	# Handling Major hasErrorors
@@ -76,8 +77,6 @@ if var_const.count(True) == len(var_names):
 
 # Process Names are put in a dictionary
 symbol_dict = {nAdd+chr(nameChr+97): symbols(nAdd+chr(nameChr+97)) for nameChr in range(0,len(var_names))}
-
-formula
 
 if not hasError:
 	# Parse from Latex to sympy using the dictionary
