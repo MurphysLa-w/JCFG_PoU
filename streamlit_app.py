@@ -61,14 +61,14 @@ for nameInd, name in enumerate(var_names):
 	elif len(name) <= 1:
 		st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
-	if any(	(name in bLname) and (nameInd != bLindex)
+	elif any(	(name in bLname) and (nameInd != bLindex)
 		for bLindex, bLname in enumerate(blackList)):
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie 'frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
-	if name not in formula:
+	elif name not in formula:
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
 		hasError = True
-	if not hasError:
+	else:
 		# Replacing the Variable with nAdd for processing
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameInd+97) + "}}")
 
