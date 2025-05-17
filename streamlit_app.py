@@ -47,6 +47,7 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the Error handling happens here
 nAdd = "tacit"
+hasError = False
 for nameChr, name in enumerate(var_names):
 	# Handling Major Errors
 	if name == None or name == " ":
