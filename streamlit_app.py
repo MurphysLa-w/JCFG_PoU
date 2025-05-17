@@ -46,6 +46,7 @@ var_const = edited_df["Ist Konstant"].tolist()
 st.write(type(var_names))
 blackList = []
 st.write(type(blackList))
+blackList = var_names.append("abc")
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the hasErroror handling happens here
