@@ -7,11 +7,11 @@ from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 st.set_page_config(page_title="JCFG",)
 
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V 1.0.2 FehlhasErrorechner von LaTex, nach LaTex.")
+st.text("V 1.0.2 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
 # Result Input
-st.subheader("hasErrorechnete Größe")
+st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
     [
        {"Formelzeichen": r"\rho_\text{Wasser}", "Einheit": "g \cdot ml^{-1}"},
@@ -21,7 +21,7 @@ edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 # Formula Input
 st.subheader("Formel")
-formula = st.text_input("Formel um Größe zu hasErrorechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
+formula = st.text_input("Formel um Größe zu Errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
 st.latex(formula)
 
 # Table for Var Input
@@ -72,7 +72,7 @@ for nameInd, name in enumerate(var_names):
 		# Replacing the Variable with nAdd for processing
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameInd+97) + "}}")
 
-# Other minor hasErrorors
+# Other minor Errors
 if var_const.count(True) == len(var_names):
 	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
 
@@ -103,7 +103,7 @@ modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
 modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
-modeC = st.toggle("hasErrorechneter Fehler")
+modeC = st.toggle("Errechneter Fehler")
 
 if hasError:
 	st.error("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
@@ -174,7 +174,7 @@ if modeV and not hasError:
 
 if modeC and not hasError:
 	### Calculate the Uncertainty
-	st.subheader("hasErrorechneter Fehler")
+	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + str(var_uncert[nameChr]))
