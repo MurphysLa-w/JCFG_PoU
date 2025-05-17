@@ -43,17 +43,12 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-st.write(type(var_names))
-blackList = []
-st.write(type(blackList))
-blackList = var_names
-blackList.append("abc")
-st.write(blackList)
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the hasErroror handling happens here
 nAdd = 'tacit'
-#blackList = var_names.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
+blackList = var_names
+blackList.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
 hasError = False # This Blocks the Process if hasErrorors have been made, so that no exceptions are thrown
 for nameChr, name in enumerate(var_names):
 	# Handling Major hasErrorors
