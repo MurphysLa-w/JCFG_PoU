@@ -48,6 +48,8 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Most of the Error handling happens here
 nAdd = "tacit"
 hasError = False
+if None in var_names:
+	var_names.replace(None, "")
 blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
@@ -56,18 +58,16 @@ for nameInd, name in enumerate(var_names):
 		name = ""
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
-	else:
-		if len(name) <= 1:
-			st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
-			hasError = True
-		elif any(	(name in bLname) and (nameInd != bLindex)
-			for bLindex, bLname in enumerate(blackList)):
-			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie 'frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
-			hasError = True
-	
-		elif name not in formula:
-			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
-			hasError = True
+	elif len(name) <= 1:
+		st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		hasError = True
+	if any(	(name in bLname) and (nameInd != bLindex)
+		for bLindex, bLname in enumerate(blackList)):
+		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie 'frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		hasError = True
+	if name not in formula:
+		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+		hasError = True
 	if not hasError:
 		# Replacing the Variable with nAdd for processing
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameInd+97) + "}}")
