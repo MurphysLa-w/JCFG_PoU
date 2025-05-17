@@ -54,16 +54,16 @@ for nameChr, name in enumerate(var_names):
 	# Handling Major hasErrorors
 	if name == None or name == " ":
 		name = " "
-		st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
 	if name not in formula:
-		st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
 		hasError = True
 	if len(name) <= 1:
-		st.hasErroror("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		st.error("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
 	#if any(name in bLWord for bLWord in blackList.remove(name)):
-		#st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		#st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		#hasError = True
 # Replacing the Variable with nAdd for processing	
 else:
@@ -84,11 +84,11 @@ if not hasError:
 		form = parse_latex(formula, backend="lark")
 		hasError = False
 	except UnexpectedEOF:
-		st.hasErroror("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
+		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-			st.hasErroror("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
+			st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
 	except:
-		st.hasErroror("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
+		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
 
 
@@ -103,7 +103,7 @@ modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("hasErrorechneter Fehler")
 
 if hasError:
-	st.hasErroror("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
+	st.error("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
 
 if modeS and not hasError:
 	### Print the PoU Formula with Derivatives
@@ -182,7 +182,7 @@ if modeC and not hasError:
 		st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
 		st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
 		if str(parse_latex(PoU_Calc, backend="lark")) == "nan":
-			st.hasErroror("Division durch Null", icon="🚨")
+			st.error("Division durch Null", icon="🚨")
 
 	except:
-		st.hasErroror("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
+		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
