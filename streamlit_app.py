@@ -51,7 +51,6 @@ hasError = False
 blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 for nameChr, name in enumerate(var_names):
-	name
 	# Handling Major Errors
 	if name == None or name == " ":
 		name = " "
@@ -63,7 +62,8 @@ for nameChr, name in enumerate(var_names):
 	if len(name) <= 1:
 		st.error("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
-	if any(name in bLWord for bLWord in blackList.remove(name)):
+	if any(	(name in bLname) and (nameChr != bLindex)
+		for bLindex, bLname in enumerate(blackList)):
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
 	# Replacing the Variable with nAdd for processing	
