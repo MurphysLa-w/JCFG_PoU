@@ -48,11 +48,8 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Most of the Error handling happens here
 nAdd = "tacit"
 hasError = False
-var_names
 blackList = list(var_names)
 blackList.append([nAdd ,r"\cdot", r"\frac", r"\mathit"])
-blackList
-var_names
 for nameChr, name in enumerate(var_names):
 	# Handling Major Errors
 	if name == None or name == " ":
@@ -65,9 +62,9 @@ for nameChr, name in enumerate(var_names):
 	if len(name) <= 1:
 		st.error("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
-	#if any(name in bLWord for bLWord in blackList.remove(name)):
-		#st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
-		#hasError = True
+	if any(name in bLWord for bLWord in blackList.remove(name)):
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		hasError = True
 	# Replacing the Variable with nAdd for processing	
 	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+97) + "}}")
