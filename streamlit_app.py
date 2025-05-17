@@ -46,17 +46,16 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd, defined hereafter to identify it more easily and to enable complicatd Variable names without messing with Lark Translator
 # Most of the error hadling happens here
-nAdd = 'AvyaKrTa'
+nAdd = 'tacit'
+BLACKLIST = var_names.append(nAdd).append(["cdot", "frac", "mathit"])
 for nameChr, name in enumerate(var_names):
 	if name == None or name == " ":
 		name = " "
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 	if name not in formula:
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
-	if nAdd in name:
-		name = "nope"
-		edited_df.iat[0, nameChr] = "nope"
-		st.error("Du weißt nichtmal was Sanskrit überhaupt ist. Die Zeichenfolge '" + nAdd + "' ist in Variablen nicht erlaubt, denk dir bitte etwas anderes aus.", icon="🚨")
+	if name in bLWord for bLWord in BLACKLIST.remove(name):
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie 'frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' -> 'c_\text(a)'", icon="🚨")
 	else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
 else:
@@ -69,7 +68,7 @@ else:
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
+		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
 	except:
 	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
