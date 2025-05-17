@@ -49,7 +49,7 @@ var_const = edited_df["Ist Konstant"].tolist()
 nAdd = "tacit"
 hasError = False
 if None in var_names:
-	var_names.replace(None, "")
+	var_names[var_names.index(None)] = ""
 blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
