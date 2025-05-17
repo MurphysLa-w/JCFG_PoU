@@ -7,11 +7,11 @@ from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 st.set_page_config(page_title="JCFG",)
 
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V 1.0.2 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V 1.0.2 FehlhasErrorechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
 # Result Input
-st.subheader("Errechnete Größe")
+st.subheader("hasErrorechnete Größe")
 dfRes = pd.DataFrame(
     [
        {"Formelzeichen": r"\rho_\text{Wasser}", "Einheit": "g \cdot ml^{-1}"},
@@ -21,7 +21,7 @@ edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 # Formula Input
 st.subheader("Formel")
-formula = st.text_input("Formel um Größe zu errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
+formula = st.text_input("Formel um Größe zu hasErrorechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
 st.latex(formula)
 
 # Table for Var Input
@@ -43,34 +43,35 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-var_names
+blackList = var_names.append("abc")
+blackList
 
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
-# Most of the error handling happens here
+# Most of the hasErroror handling happens here
 nAdd = 'tacit'
-BLACKLIST = var_names.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
-ERR = False # This Blocks the Process if Errors have been made, so that no exceptions are thrown
+blackList = var_names.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
+hasError = False # This Blocks the Process if hasErrorors have been made, so that no exceptions are thrown
 for nameChr, name in enumerate(var_names):
-	# Handling Major Errors
+	# Handling Major hasErrorors
 	if name == None or name == " ":
 		name = " "
-		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
-		ERR = True
+		st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
+		hasError = True
 	if name not in formula:
-		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
-		ERR = True
+		st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+		hasError = True
 	if len(name) <= 1:
-		st.error("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
-		ERR = True
-	if any(name in bLWord for bLWord in BLACKLIST.remove(name)):
-		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
-		ERR = True
+		st.hasErroror("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		hasError = True
+	if any(name in bLWord for bLWord in blackList.remove(name)):
+		st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		hasError = True
 # Replacing the Variable with nAdd for processing	
 else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+97) + "}}")
 
-# Other minor Errors
+# Other minor hasErrorors
 if var_const.count(True) == len(var_names):
 	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
 
@@ -78,18 +79,18 @@ if var_const.count(True) == len(var_names):
 # Process Names are put in a dictionary
 symbol_dict = {nAdd+chr(nameChr+97): symbols(nAdd+chr(nameChr+97)) for nameChr in range(0,len(var_names))}
 
-if not ERR:
+if not hasError:
 	# Parse from Latex to sympy using the dictionary
-	ERR = True
+	hasError = True
 	try:
 		form = parse_latex(formula, backend="lark")
-		ERR = False
+		hasError = False
 	except UnexpectedEOF:
-		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
+		st.hasErroror("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-			st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
+			st.hasErroror("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
 	except:
-		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
+		st.hasErroror("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
 
 
@@ -101,12 +102,12 @@ modeS = st.toggle("Ableitungen nach allen Variablen")
 modeR = st.toggle("Formel in Rohform")
 modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
-modeC = st.toggle("Errechneter Fehler")
+modeC = st.toggle("hasErrorechneter Fehler")
 
-if ERR:
-	st.error("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
+if hasError:
+	st.hasErroror("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
 
-if modeS and not ERR:
+if modeS and not hasError:
 	### Print the PoU Formula with Derivatives
 	st.subheader("Einzelableitungen")
 	PoU_SingleDeriv = ""
@@ -121,7 +122,7 @@ if modeS and not ERR:
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		st.latex(PoU_SingleDeriv)
 		st.code(PoU_SingleDeriv, language="latex")
-if modeR  and not ERR:
+if modeR  and not hasError:
 	### Calculating the Propagation of Uncertainty PoU ###
 	### Print the Raw PoU Formula
 	st.subheader("Rohformel")
@@ -134,7 +135,7 @@ if modeR  and not ERR:
 	st.latex(PoU_Raw)
 	st.code(PoU_Raw, language="latex")
 
-if (modeD or modeV or modeC) and not ERR: # Required for V, C
+if (modeD or modeV or modeC) and not hasError: # Required for V, C
 	### Print the PoU Formula with Derivatives
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
@@ -156,7 +157,7 @@ if (modeD or modeV or modeC) and not ERR: # Required for V, C
 		st.code(PoU_Diff, language="latex")
 
 
-if modeV and not ERR:
+if modeV and not hasError:
 	### Print the PoU Formula with Values
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
@@ -170,9 +171,9 @@ if modeV and not ERR:
 		st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen.", icon="⚠️")
 
 
-if modeC and not ERR:
+if modeC and not hasError:
 	### Calculate the Uncertainty
-	st.subheader("Errechneter Fehler")
+	st.subheader("hasErrorechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + str(var_uncert[nameChr]))
@@ -183,7 +184,7 @@ if modeC and not ERR:
 		st.latex(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}")
 		st.code(r"\begin{equation}" + res_name + " = \pm" + str(parse_latex(PoU_Calc, backend="lark")) + r" \end{equation}", language="latex")
 		if str(parse_latex(PoU_Calc, backend="lark")) == "nan":
-			st.error("Division durch Null", icon="🚨")
+			st.hasErroror("Division durch Null", icon="🚨")
 
 	except:
-		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
+		st.hasErroror("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
