@@ -52,6 +52,7 @@ blackList = list(var_names)
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 blackList
 for nameChr, name in enumerate(var_names):
+	name
 	# Handling Major Errors
 	if name == None or name == " ":
 		name = " "
