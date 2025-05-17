@@ -44,36 +44,52 @@ var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
 # Replacing old names for processing
-# Every Name gets a name Addon nAdd, defined hereafter to identify it more easily and to enable complicatd Variable names without messing with Lark Translator
-# Most of the error hadling happens here
+# Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
+# Most of the error handling happens here
 nAdd = 'tacit'
-BLACKLIST = var_names.append(nAdd).append(["cdot", "frac", "mathit"])
+BLACKLIST = var_names.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
+ERR = False # This Blocks the Process if Errors have been made, so that no exceptions are thrown
 for nameChr, name in enumerate(var_names):
+	# Handling Major Errors
 	if name == None or name == " ":
 		name = " "
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
+		ERR = True
 	if name not in formula:
 		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+		ERR = True
+	if len(name) <= 1:
+		st.error("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		ERR = True
 	if name in bLWord for bLWord in BLACKLIST.remove(name):
-		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie 'frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' -> 'c_\text(a)'", icon="🚨")
-	else:
-		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+106) + "}}")
+		st.error("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		ERR = True
+# Replacing the Variable with nAdd for processing	
 else:
-	# Process Names are put in a dictionary
-	symbol_dict = {nAdd+chr(nameChr+106): symbols(nAdd+chr(nameChr+106)) for nameChr in range(0,len(var_names))}
+		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+97) + "}}")
 
+# Other minor Errors
+if var_const.count(True) == len(var_names):
+	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
+
+
+# Process Names are put in a dictionary
+symbol_dict = {nAdd+chr(nameChr+97): symbols(nAdd+chr(nameChr+97)) for nameChr in range(0,len(var_names))}
+
+if not ERR:
 	# Parse from Latex to sympy using the dictionary
+	ERR = True
 	try:
 		form = parse_latex(formula, backend="lark")
+		ERR = False
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
+			st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
 	except:
-	  st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
+		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
-if var_const.count(True) == len(var_names):
-	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
+
 
 
 
@@ -85,22 +101,25 @@ modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Fehler")
 
-if modeS:
+if ERR:
+	st.error("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
+
+if modeS and not ERR:
 	### Print the PoU Formula with Derivatives
 	st.subheader("Einzelableitungen")
 	PoU_SingleDeriv = ""
 	for nameChr, name in enumerate(var_names):
 		if var_const[nameChr]:
 			continue
-		PoU_SingleDeriv = latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))
+		PoU_SingleDeriv = latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+97)])))
 		
 		# Reintroduce the Original Var Names
 		for nameChr, orgName in enumerate(var_names):
-			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+106), orgName)
+			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+97), orgName)
 		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 		st.latex(PoU_SingleDeriv)
 		st.code(PoU_SingleDeriv, language="latex")
-if modeR:
+if modeR  and not ERR:
 	### Calculating the Propagation of Uncertainty PoU ###
 	### Print the Raw PoU Formula
 	st.subheader("Rohformel")
@@ -113,13 +132,13 @@ if modeR:
 	st.latex(PoU_Raw)
 	st.code(PoU_Raw, language="latex")
 
-if (modeD or modeV or modeC): # Required for V, C
+if (modeD or modeV or modeC) and not ERR: # Required for V, C
 	### Print the PoU Formula with Derivatives
 	PoU_Diff = r"\pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
 		if var_const[nameChr]:
 			continue
-		PoU_Diff += r"\left(" + str(latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+106)])))) + r"\Delta " + nAdd+chr(nameChr+106) + r"\right)^{2} \\ &+ "
+		PoU_Diff += r"\left(" + str(latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+97)])))) + r"\Delta " + nAdd+chr(nameChr+97) + r"\right)^{2} \\ &+ "
 	PoU_Diff = PoU_Diff[:-7] + "\end{split} }"
 	# Create Copies fo different uses
 	PoU_Val = PoU_Diff
@@ -127,7 +146,7 @@ if (modeD or modeV or modeC): # Required for V, C
 	
 	# Reintroduce the Original Var Names
 	for nameChr, name in enumerate(var_names):
-		PoU_Diff = PoU_Diff.replace(nAdd+chr(nameChr+106), name)
+		PoU_Diff = PoU_Diff.replace(nAdd+chr(nameChr+97), name)
 	PoU_Diff = r"\begin{equation}" + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
 	if modeD:
 		st.subheader("Formel mit Ableitungen")
@@ -135,13 +154,13 @@ if (modeD or modeV or modeC): # Required for V, C
 		st.code(PoU_Diff, language="latex")
 
 
-if modeV:
+if modeV and not ERR:
 	### Print the PoU Formula with Values
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
-		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+106), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
-		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
+		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
+		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation}"  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
@@ -149,13 +168,13 @@ if modeV:
 		st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen.", icon="⚠️")
 
 
-if modeC:
+if modeC and not ERR:
 	### Calculate the Uncertainty
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
-		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+106), " * " + str(var_uncert[nameChr]))
-		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+106), str(var_values[nameChr]))
+		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + str(var_uncert[nameChr]))
+		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
 
 	try:
