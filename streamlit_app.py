@@ -47,9 +47,8 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the hasErroror handling happens here
 nAdd = 'tacit'
-blackList = var_names
-blackList.append(nAdd)
-#.append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
+#blackList = var_names
+#blackList.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
 hasError = False # This Blocks the Process if hasErrorors have been made, so that no exceptions are thrown
 for nameChr, name in enumerate(var_names):
 	# Handling Major hasErrorors
@@ -63,9 +62,9 @@ for nameChr, name in enumerate(var_names):
 	if len(name) <= 1:
 		st.hasErroror("Der Name der " + str(nameChr+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
 		hasError = True
-	if any(name in bLWord for bLWord in blackList.remove(name)):
-		st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
-		hasError = True
+	#if any(name in bLWord for bLWord in blackList.remove(name)):
+		#st.hasErroror("Die " + str(nameChr+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex wie '\frac' vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\text{a}'", icon="🚨")
+		#hasError = True
 # Replacing the Variable with nAdd for processing	
 else:
 		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameChr+97) + "}}")
