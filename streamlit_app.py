@@ -52,8 +52,8 @@ blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
 	# Handling Major Errors
-	if name == None or name == " ":
-		name = " "
+	if name == None or name == "":
+		name = ""
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
 	elif name not in formula:
