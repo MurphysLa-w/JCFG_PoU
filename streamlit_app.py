@@ -51,6 +51,7 @@ hasError = False
 blackList = list(var_names)
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 blackList
+var_names
 for nameChr, name in enumerate(var_names):
 	name
 	# Handling Major Errors
