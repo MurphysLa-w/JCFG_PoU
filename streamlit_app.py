@@ -48,7 +48,9 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Most of the Error handling happens here
 nAdd = "tacit"
 hasError = False
-blackList = list(var_names).append(nAdd).append([r"\cdot", r"\frac", r"\mathit"])
+var_names
+blackList = list(var_names)
+blackList.append([nAdd ,r"\cdot", r"\frac", r"\mathit"])
 blackList
 var_names
 for nameChr, name in enumerate(var_names):
