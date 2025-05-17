@@ -43,7 +43,7 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-var_names
+type(var_names)
 blackList = {"abc"}
 blackList = var_names.append("abc")
 blackList
