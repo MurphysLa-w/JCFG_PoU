@@ -77,6 +77,8 @@ if var_const.count(True) == len(var_names):
 # Process Names are put in a dictionary
 symbol_dict = {nAdd+chr(nameChr+97): symbols(nAdd+chr(nameChr+97)) for nameChr in range(0,len(var_names))}
 
+formula
+
 if not hasError:
 	# Parse from Latex to sympy using the dictionary
 	hasError = True
