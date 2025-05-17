@@ -48,7 +48,8 @@ var_const = edited_df["Ist Konstant"].tolist()
 # Most of the hasErroror handling happens here
 nAdd = 'tacit'
 blackList = var_names
-blackList.append(nAdd).append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
+blackList.append(nAdd)
+#.append(["cdot", "frac", "mathit", r"{(+-*/_\, )}"])
 hasError = False # This Blocks the Process if hasErrorors have been made, so that no exceptions are thrown
 for nameChr, name in enumerate(var_names):
 	# Handling Major hasErrorors
