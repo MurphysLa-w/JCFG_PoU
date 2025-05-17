@@ -50,7 +50,7 @@ nAdd = "tacit"
 hasError = False
 blackList = list(var_names)
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
-blackList
+blackList.remove("m_\text{Wasser}")
 var_names
 for nameChr, name in enumerate(var_names):
 	name
