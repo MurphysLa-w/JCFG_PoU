@@ -130,7 +130,7 @@ if modeR  and not hasError:
 	### Calculating the Propagation of Uncertainty PoU ###
 	### Print the Raw PoU Formula
 	st.subheader("Rohformel")
-	PoU_Raw = r"\begin{equation} \Delta" + res_name + r" = \pm\sqrt{ \begin{split} &"
+	PoU_Raw = r"\begin{equation} \Delta " + res_name + r" = \pm\sqrt{ \begin{split} &"
 	for nameChr, name in enumerate(var_names):
 		if var_const[nameChr]: # Dont't derive for constants
 			continue
@@ -154,7 +154,7 @@ if (modeD or modeV or modeC) and not hasError: # Required for V, C
 	# Reintroduce the Original Var Names
 	for nameChr, name in enumerate(var_names):
 		PoU_Diff = PoU_Diff.replace(nAdd+chr(nameChr+97), name)
-	PoU_Diff = r"\begin{equation} \Delta" + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
+	PoU_Diff = r"\begin{equation} \Delta " + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
 	if modeD:
 		st.subheader("Formel mit Ableitungen")
 		st.latex(PoU_Diff)
@@ -168,7 +168,7 @@ if modeV and not hasError:
 	for nameChr, name in enumerate(var_names):
 		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
-	PoU_Val = r"\begin{equation} \Delta"  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
+	PoU_Val = r"\begin{equation} \Delta "  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
 	if "nan" in PoU_Val:
@@ -186,8 +186,8 @@ if modeC and not hasError:
 
 	try:
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
-		st.latex(r"\begin{equation} \Delta" + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
-		st.code(r"\begin{equation} \Delta" + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
+		st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
+		st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null", icon="🚨")
 
