@@ -117,7 +117,7 @@ modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Fehler")
 
 if hasError:
-	st.error("Korrigierne sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
+	st.error("Korrigieren sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
 
 if modeS and not hasError:
 	### Print the PoU Formula with Derivatives
