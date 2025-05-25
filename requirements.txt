@@ -1,4 +1,3 @@
-re
 sympy
 pandas
 streamlit
