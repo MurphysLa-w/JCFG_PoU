@@ -1,3 +1,4 @@
+import re as regex
 import pandas as pd
 import streamlit as st
 from sympy import *
@@ -184,7 +185,7 @@ if modeV and not hasError:
 	PoU_Val = r"\begin{equation} \Delta "  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
 	
 	# Finding unwanted spaces between a value und a number from the formula
-	#PoU_Val = re.sub(r'(?<=\d)\s+(?=\d)', r'\\cdot', PoU_Val)
+	PoU_Val = re.sub(r"(?<=\d)\s+(?=\d)", r"\cdot", PoU_Val)
 	
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
