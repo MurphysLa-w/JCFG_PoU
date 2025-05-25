@@ -1,5 +1,6 @@
-streamlit
-pandas
+re
 sympy
-antlr4-python3-runtime
+pandas
+streamlit
 lark-parser
+antlr4-python3-runtime
