@@ -1,5 +1,6 @@
-import streamlit as st
+import re
 import pandas as pd
+import streamlit as st
 from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
@@ -9,6 +10,9 @@ st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("V beta 1.0.3 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
+
+# Global Settings
+pd.set_option('display.float_format', lambda x: f'{x:.8f}')
 
 # Result Input
 st.subheader("Errechnete Größe")
@@ -34,6 +38,8 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
+
+
 # Retrieve the User Input
 res_name = str(edited_dfRes.iat[0, 0])
 res_unit = str(edited_dfRes.iat[0, 1])
@@ -43,13 +49,16 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
+for uncertInd, uncert in enumerate(var_uncert):
+	var_uncert[uncertInd] = round(uncert, int(str(var_uncert[1])[-2:])) if uncert<=0.0001 else uncert
+
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the Error handling happens here
 nAdd = "tacit"
 hasError = False
 for nameInd, name in enumerate(var_names):
-	var_names[nameInd] = ("" if name == None else name)
+	var_names[nameInd] = "" if name == None else name
 blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
@@ -166,9 +175,18 @@ if modeV and not hasError:
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
-		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
+		# If Uncertainties are too small and are shown in scientific format, format them into decimal
+		if var_uncert[nameChr] < 0.0001:
+			precision = str(var_uncert[nameChr])[-2:]
+			PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + f"{var_uncert[nameChr]:.{precision}f}" + " \mathrm{" + str(var_units[nameChr]) + "}")
+		else:
+			PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation} \Delta "  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
+	
+	# Finding unwanted spaces between a value und a number from the formula
+	PoU_Val = re.sub(r'(?<=\d)\s+(?=\d)', r'\\cdot', PoU_Val)
+	
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
 	if "nan" in PoU_Val:
@@ -180,14 +198,21 @@ if modeC and not hasError:
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
-		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + str(var_uncert[nameChr]))
+		# If Uncertainties are too small and are shown in scientific format, format them into decimal
+		if var_uncert[nameChr] < 0.0001:
+			precision = str(var_uncert[nameChr])[-2:]
+			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + f"{var_uncert[nameChr]:.{precision}f}")
+		else:
+			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + str(var_uncert[nameChr]))
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
-
+	
 	try:
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
+		
 		st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
 		st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
+		
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null", icon="🚨")
 
