@@ -172,7 +172,7 @@ if modeV and not hasError:
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
 		# If Uncertainties are too close to 0 and are shown in scientific format, format them into decimal
-		if abs(var_uncert[nameChr]) < 0.0001:
+		if abs(var_uncert[nameChr]) < 0.0001  and var_uncert[nameChr] != 0:
 			precision = str(var_uncert[nameChr])[-2:]
 			PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + f"{var_uncert[nameChr]:.{precision}f}" + " \mathrm{" + str(var_units[nameChr]) + "}")
 		else:
@@ -192,7 +192,7 @@ if modeC and not hasError:
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
 		# If Uncertainties are too close to 0 and are shown in scientific format, format them into decimal
-		if abs(var_uncert[nameChr]) < 0.0001:
+		if abs(var_uncert[nameChr]) < 0.0001 and var_uncert[nameChr] != 0:
 			precision = str(var_uncert[nameChr])[-2:]
 			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + f"({var_uncert[nameChr]:.{precision}f})")
 		else:
