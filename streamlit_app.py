@@ -48,9 +48,6 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-for uncertInd, uncert in enumerate(var_uncert):
-	var_uncert[uncertInd] = round(uncert, int(str(var_uncert[1])[-2:])) if abs(uncert)<=0.0001 else uncert
-
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
 # Most of the Error handling happens here
@@ -174,8 +171,8 @@ if modeV and not hasError:
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
-		# If Uncertainties are too small and are shown in scientific format, format them into decimal
-		if var_uncert[nameChr] < 0.0001:
+		# If Uncertainties are too close to 0 and are shown in scientific format, format them into decimal
+		if abs(var_uncert[nameChr]) < 0.0001:
 			precision = str(var_uncert[nameChr])[-2:]
 			PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + f"{var_uncert[nameChr]:.{precision}f}" + " \mathrm{" + str(var_units[nameChr]) + "}")
 		else:
@@ -194,15 +191,15 @@ if modeC and not hasError:
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
-		# If Uncertainties are too small and are shown in scientific format, format them into decimal
-		if var_uncert[nameChr] < 0.0001:
+		# If Uncertainties are too close to 0 and are shown in scientific format, format them into decimal
+		if abs(var_uncert[nameChr]) < 0.0001:
 			precision = str(var_uncert[nameChr])[-2:]
-			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + f"{var_uncert[nameChr]:.{precision}f}")
+			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + f"({var_uncert[nameChr]:.{precision}f})")
 		else:
-			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + str(var_uncert[nameChr]))
+			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
-	
+		
 	try:
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
 		
