@@ -7,7 +7,7 @@ from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 st.set_page_config(page_title="JCFG",)
 
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.0.3 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.0.4 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
 # Global Settings
@@ -49,7 +49,7 @@ var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
 for uncertInd, uncert in enumerate(var_uncert):
-	var_uncert[uncertInd] = round(uncert, int(str(var_uncert[1])[-2:])) if uncert<=0.0001 else uncert
+	var_uncert[uncertInd] = round(uncert, int(str(var_uncert[1])[-2:])) if abs(uncert)<=0.0001 else uncert
 
 # Replacing old names for processing
 # Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
