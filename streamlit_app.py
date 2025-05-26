@@ -134,7 +134,7 @@ if not hasError:
 			diff(form, symbol_dict[nAdd+chr(0+97)])
 			hasError = False
 		except:
-			st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Der Grund liegt wahrscheinlich bei einem falschgeschriebenen '\cdot' oder einem anderen Wort mit 'd'.", icon="🚨")
+			st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Liegt der Fehler bei einem fehlerhaften '\cdot'?", icon="🚨")
 		
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
@@ -242,7 +242,7 @@ if modeC and not hasError:
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null!", icon="🚨")
 		if "Tree" in PoU_CalcOut:
-			st.warning("Die Formel liefert folgende mögliche Ergebnisse: \n\n" + PoU_CalcOut.replace("Tree('_ambig', ","") , icon="⚠️")
+			st.warning("Die Formel liefert kein eindeutiges Ergebnis. \n\n Lösungen: " + PoU_CalcOut.replace("Tree('_ambig', ","")[:-1] , icon="⚠️")
 		else:
 			st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
 			st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
