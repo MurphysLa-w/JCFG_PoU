@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 import streamlit as st
 from sympy import *
 from sympy.parsing.latex import parse_latex
@@ -54,20 +55,31 @@ hasError = False
 # Replacing old names for processing
 nAdd = "roc"			# Used as a placeholder + {a,b,c,...} to allow use of complicated variable names without interrupting the Lark Translator
 
-# Setting up the Blacklist
-blackList = var_names.copy()
-blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 
-# Check for Empty Names
+
+# Check for None Type Names
 for nameInd, name in enumerate(var_names):
 	if name == None or name in ["", " ", "  "]:
 		var_names[nameInd] = ""
+		name = ""
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
+
+# Error about too many Vars
+if len(var_names) > 26:
+	st.error("Es wurden mehr als 26 Variablen angegeben!", icon="🚨")
+	hasError = True
+
+# Setting up the Blacklist
+blackList = var_names.copy()
+blackList = blackList + [r"\cdot", r"\frac", r"\mathit"]
+for nameInd, name in enumerate(var_names):
+	blackList = blackList + [nAdd+chr(nameInd+97)]
+
 # Refining the Names, check for length, ambiguity
 if not hasError:
 	for nameInd, name in enumerate(var_names):
-		if len(name) == 1 and chr(name) in range(97, 122):
+		if len(name) == 1 and 'a' <= name <= 'z':
 			st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="🚨")
 			hasError = True
 		elif len(name) == 1: #Non fatal error
@@ -75,7 +87,8 @@ if not hasError:
 		elif name not in formula:
 			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
 			hasError = True
-		elif any((name in bLname) and (nameInd != bLindex) for bLindex, bLname in enumerate(blackList)):
+		elif any(	(name in bLname) and (nameInd != bLindex)
+					for bLindex, bLname in enumerate(blackList)):
 			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
 			hasError = True
 		else:
