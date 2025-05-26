@@ -74,8 +74,7 @@ for nameInd, name in enumerate(var_names):
 		elif name not in formula:
 			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
 			hasError = True
-		elif any(	(name in bLname) and (nameInd != bLindex)
-				for bLindex, bLname in enumerate(blackList)):
+		elif any((name in bLname) and (nameInd != bLindex) for bLindex, bLname in enumerate(blackList)):
 			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
 			hasError = True
 		else:
