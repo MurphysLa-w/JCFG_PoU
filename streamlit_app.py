@@ -58,28 +58,29 @@ nAdd = "roc"			# Used as a placeholder + {a,b,c,...} to allow use of complicated
 blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
 
-# Refining the Names, check for length, ambiguity
+# Check for Empty Names
 for nameInd, name in enumerate(var_names):
 	if name == None or name in ["", " ", "  "]:
 		var_names[nameInd] = ""
-		name = ""
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
-	elif len(name) == 1 and chr(name) in range(97, 122):
-		st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="🚨")
-		hasError = True
-	elif len(name) == 1: #Non fatal error
-		st.warning("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist sehr kurz und könnte nicht eindeutig genug sein. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="⚠️")
-	elif name not in formula:
-		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
-		hasError = True
-	elif any(	(name in bLname) and (nameInd != bLindex)
+# Refining the Names, check for length, ambiguity
+for nameInd, name in enumerate(var_names):
+		elif len(name) == 1 and chr(name) in range(97, 122):
+			st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="🚨")
+			hasError = True
+		elif len(name) == 1: #Non fatal error
+			st.warning("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist sehr kurz und könnte nicht eindeutig genug sein. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="⚠️")
+		elif name not in formula:
+			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
+			hasError = True
+		elif any(	(name in bLname) and (nameInd != bLindex)
 				for bLindex, bLname in enumerate(blackList)):
-		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
-		hasError = True
-	else:
-		# If no error occurred replace the Variable with nAdd for processing
-		formula = formula.replace(name, r"\mathit{" + nAdd + chr(nameInd+97) + "}")
+			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
+			hasError = True
+		else:
+			# If no error occurred replace the Variable with nAdd for processing
+			formula = formula.replace(name, r"\mathit{" + nAdd + chr(nameInd+97) + "}")
 
 
 # Other Replacements (TODO if list grows, make into Loop)
