@@ -4,14 +4,13 @@ from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
+# Page Header
 st.set_page_config(page_title="JCFG",)
-
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.0.4 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.0.5 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
-# Global Settings
-pd.set_option('display.float_format', lambda x: f'{x:.8f}')
+### Getting the User Input
 
 # Result Input
 st.subheader("Errechnete Größe")
@@ -37,8 +36,6 @@ df = pd.DataFrame(
 )
 edited_df = st.data_editor(df, num_rows="dynamic")
 
-
-
 # Retrieve the User Input
 res_name = str(edited_dfRes.iat[0, 0])
 res_unit = str(edited_dfRes.iat[0, 1])
@@ -48,43 +45,68 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-# Replacing old names for processing
-# Every Name gets a name Addon nAdd + {a,b,c,...}, defined hereafter to identify it more easily and to enable complicated Variable names without messing with Lark Translator
+
+
+### Refine the User Input
 # Most of the Error handling happens here
-nAdd = "tacit"
 hasError = False
-for nameInd, name in enumerate(var_names):
-	var_names[nameInd] = "" if name == None else name
+
+# Replacing old names for processing
+nAdd = "roc"			# Used as a placeholder + {a,b,c,...} to allow use of complicated variable names without interrupting the Lark Translator
+
+# Setting up the Blacklist
 blackList = var_names.copy()
 blackList = blackList + [nAdd ,r"\cdot", r"\frac", r"\mathit"]
+
+# Refining the Names, check for length, ambiguity
 for nameInd, name in enumerate(var_names):
-	# Handling Major Errors
-	if name == None or name == "" or name == " ":
+	if name == None or name in ["", " ", "  "]:
+		var_names[nameInd] = ""
 		name = ""
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
-	elif len(name) <= 1:
-		st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
+	elif len(name) == 1 and chr(name) in range(97, 122):
+		st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="🚨")
 		hasError = True
-	elif any(	(name in bLname) and (nameInd != bLindex)
-		for bLindex, bLname in enumerate(blackList)):
-		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') oder diesem Rechner vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
-		hasError = True
+	elif len(name) == 1: #Non fatal error
+		st.warning("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist sehr kurz und könnte nicht eindeutig genug sein. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="⚠️")
 	elif name not in formula:
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
 		hasError = True
+	elif any(	(name in bLname) and (nameInd != bLindex)
+				for bLindex, bLname in enumerate(blackList)):
+		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
+		hasError = True
 	else:
-		# Replacing the Variable with nAdd for processing
-		formula = formula.replace(name, r"{\mathit{" + nAdd + chr(nameInd+97) + "}}")
+		# If no error occurred replace the Variable with nAdd for processing
+		formula = formula.replace(name, r"\mathit{" + nAdd + chr(nameInd+97) + "}")
+
 
 # Other Replacements (TODO if list grows, make into Loop)
 formula = formula.replace(r"\left(", "(").replace(r"\right)", ")")
 
-# Other minor Errors
-if var_const.count(True) == len(var_names):
+# Preventing scientific format in small floats by casting into strings
+for valInd, value in enumerate(var_values):
+	if abs(var_values[valInd]) < 0.0001 and var_values[valInd] != 0:
+		precision = str(var_values[valInd])[-2:]
+		var_values[valInd] = f"({value:.{precision}f})"
+	else:
+		var_values[valInd] = str(value)
+
+for uncInd, uncert in enumerate(var_uncert):
+	if abs(var_uncert[uncInd]) < 0.0001 and var_uncert[uncInd] != 0:
+		precision = str(var_uncert[uncInd])[-2:]
+		var_uncert[uncInd] = f"({uncert:.{precision}f})"
+	else:
+		var_uncert[uncInd] = str(uncert)
+
+# Warning about All Const
+if var_const.count(True) == len(var_names) and len(var_names) != 0:
 	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
 
 
+
+### Processing the Formula
 # Process Names are put in a dictionary
 symbol_dict = {nAdd+chr(nameChr+97): symbols(nAdd+chr(nameChr+97)) for nameChr in range(0,len(var_names))}
 
@@ -93,18 +115,25 @@ if not hasError:
 	hasError = True
 	try:
 		form = parse_latex(formula, backend="lark")
-		hasError = False
+		
+		try: # Catching the "dx-Tuple Bug"
+			diff(form, symbol_dict[nAdd+chr(0+97)])
+			hasError = False
+		except:
+			st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Der Grund liegt wahrscheinlich bei einem falschgeschriebenen '\cdot' oder einem anderen Wort mit 'd'.", icon="🚨")
+		
 	except UnexpectedEOF:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 	except UnexpectedCharacters as e:
-			st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):] + "'", icon="🚨")
+			errorStr = str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):]
+			for nameChr, orgName in enumerate(var_names):
+				errorStr = errorStr.replace(r"\mathit{"+nAdd+chr(nameChr+97)+"}", orgName)
+			st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + errorStr + "'", icon="🚨")
 	except:
 		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 
 
-
-
-
+### The Modus Operandi
 # Mode Selector
 st.subheader("Modi")
 modeS = st.toggle("Ableitungen nach allen Variablen")
@@ -113,26 +142,29 @@ modeD = st.toggle("Formel mit Ableitungen")
 modeV = st.toggle("Formel mit Fehlerwerten")
 modeC = st.toggle("Errechneter Fehler")
 
-if hasError:
+if hasError: # Interrupt if error
 	st.error("Korrigieren sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
 
-if modeS and not hasError:
-	### Print the PoU Formula with Derivatives
-	st.subheader("Einzelableitungen")
+else: # This part is always run to check for errors in simplify
+	if modeS: st.subheader("Einzelableitungen")
 	PoU_SingleDeriv = ""
 	for nameChr, name in enumerate(var_names):
 		if var_const[nameChr]:
 			continue
 		PoU_SingleDeriv = latex(simplify(diff(form, symbol_dict[nAdd+chr(nameChr+97)])))
 		
-		# Reintroduce the Original Var Names
-		for nameChr, orgName in enumerate(var_names):
-			PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+97), orgName)
-		PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
-		st.latex(PoU_SingleDeriv)
-		st.code(PoU_SingleDeriv, language="latex")
+		if modeS:
+			### Print the Singular Derivatives for each Variable
+			# Reintroduce the Original Var Names
+			for nameChr, orgName in enumerate(var_names):
+				PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+97), orgName)
+			PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
+			
+			st.latex(PoU_SingleDeriv)
+			st.code(PoU_SingleDeriv, language="latex")
+		
 if modeR  and not hasError:
-	### Calculating the Propagation of Uncertainty PoU ###
+	### Calculating the Propagation of Uncertainty PoU
 	### Print the Raw PoU Formula
 	st.subheader("Rohformel")
 	PoU_Raw = r"\begin{equation} \Delta " + res_name + r" = \pm\sqrt{ \begin{split} &"
@@ -171,12 +203,7 @@ if modeV and not hasError:
 	# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 	st.subheader("Formel mit Fehlerwerten")
 	for nameChr, name in enumerate(var_names):
-		# If Uncertainties are too close to 0 and are shown in scientific format, format them into decimal
-		if abs(var_uncert[nameChr]) < 0.0001  and var_uncert[nameChr] != 0:
-			precision = str(var_uncert[nameChr])[-2:]
-			PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + f"{var_uncert[nameChr]:.{precision}f}" + " \mathrm{" + str(var_units[nameChr]) + "}")
-		else:
-			PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
+		PoU_Val = PoU_Val.replace(r"\Delta " + nAdd+chr(nameChr+97), "\cdot" + str(var_uncert[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation} \Delta "  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
 	
@@ -191,23 +218,20 @@ if modeC and not hasError:
 	st.subheader("Errechneter Fehler")
 	PoU_Calc = PoU_Calc[3:]
 	for nameChr, name in enumerate(var_names):
-		# If Uncertainties are too close to 0 and are shown in scientific format, format them into decimal
-		if abs(var_uncert[nameChr]) < 0.0001 and var_uncert[nameChr] != 0:
-			precision = str(var_uncert[nameChr])[-2:]
-			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * " + f"({var_uncert[nameChr]:.{precision}f})")
-		else:
-			PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
+		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
 		
 	try:
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
 		
-		st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
-		st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
-		
 		if PoU_CalcOut == "nan":
-			st.error("Division durch Null", icon="🚨")
+			st.error("Division durch Null!", icon="🚨")
+		if "Tree" in PoU_CalcOut:
+			st.warning("Die Formel liefert folgende mögliche Ergebnisse: \n\n" + PoU_CalcOut.replace("Tree('_ambig', ","") , icon="⚠️")
+		else:
+			st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
+			st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
 
 	except:
 		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
