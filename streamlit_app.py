@@ -65,7 +65,8 @@ for nameInd, name in enumerate(var_names):
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
 # Refining the Names, check for length, ambiguity
-for nameInd, name in enumerate(var_names):
+if not hasError:
+	for nameInd, name in enumerate(var_names):
 		if len(name) == 1 and chr(name) in range(97, 122):
 			st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="🚨")
 			hasError = True
