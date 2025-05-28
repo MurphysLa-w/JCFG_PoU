@@ -251,7 +251,7 @@ if modeC and not hasError:
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
 		
 	try:
-		if DEBUG: st.write(PoU_CalcOut)
+		if DEBUG: st.write(PoU_Calc)
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
 		if DEBUG: st.write(PoU_CalcOut)
 		
