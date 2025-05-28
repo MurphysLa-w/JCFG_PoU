@@ -24,7 +24,7 @@ edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 # DEBUG Mode
 DEBUG = str(edited_dfRes.iat[0, 1]) == "debug"
-if DEBUG: st.write("DEBUG-MODE:" + DEBUG)
+if DEBUG: st.write("DEBUG-MODE:" + str(DEBUG))
 
 # Formula Input
 st.subheader("Formel")
