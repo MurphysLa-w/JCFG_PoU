@@ -24,7 +24,7 @@ edited_dfRes = st.data_editor(dfRes, hide_index=True)
 
 # DEBUG Mode
 DEBUG = str(edited_dfRes.iat[0, 1]) == "debug"
-if DEBUG: st.write("DEBUG-MODE:" + str(DEBUG))
+if DEBUG: st.info("DEBUG: Aktiv")
 
 # Formula Input
 st.subheader("Formel")
@@ -79,7 +79,7 @@ blackList = blackList + [r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
 	blackList = blackList + [nAdd+chr(nameInd+97)]
 
-if DEBUG: st.write(formula)
+if DEBUG: st.info(formula)
 
 # Refining the Names, check for length, ambiguity
 if not hasError:
@@ -100,7 +100,7 @@ if not hasError:
 			# If no error occurred replace the Variable with nAdd for processing
 			formula = formula.replace(name, r"\mathit{" + nAdd + chr(nameInd+97) + "}")
 
-if DEBUG: st.write(formula)
+if DEBUG: st.info(formula)
 
 # Other Replacements (TODO if list grows, make into Loop)
 formula = formula.replace(r"\left(", "(").replace(r"\right)", ")")
@@ -135,27 +135,27 @@ if not hasError:
 	hasError = True
 	try:
 		form = parse_latex(formula, backend="lark")
-		if DEBUG: st.write(form)
+		if DEBUG: st.info(form)
 		
 		try: # Catching the "dx-Tuple Bug"
 			diff(form, symbol_dict[nAdd+chr(0+97)])
 			hasError = False
 		except Exception as e:
 			st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Liegt der Fehler bei einem fehlerhaften '\cdot'?", icon="🚨")
-			if DEBUG: st.write(e)
+			if DEBUG: st.exception(e)
 		
 	except UnexpectedEOF as e:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
-		if DEBUG: st.write(e)
+		if DEBUG: st.exception(e)
 	except UnexpectedCharacters as e:
 		errorStr = str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):]
 		for nameChr, orgName in enumerate(var_names):
 			errorStr = errorStr.replace(r"\mathit{"+nAdd+chr(nameChr+97)+"}", orgName)
 		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + errorStr + "'", icon="🚨")
-		if DEBUG: st.write(e)
+		if DEBUG: st.exception(e)
 	except Exception as e:
 		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
-		if DEBUG: st.write(e)
+		if DEBUG: st.exception(e)
 
 
 ### The Modus Operandi
@@ -248,9 +248,9 @@ if modeC and not hasError:
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
 		
 	try:
-		if DEBUG: st.write(PoU_Calc)
+		if DEBUG: st.info(PoU_Calc)
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
-		if DEBUG: st.write(PoU_CalcOut)
+		if DEBUG: st.info(PoU_CalcOut)
 		
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null!", icon="🚨")
@@ -262,4 +262,4 @@ if modeC and not hasError:
 
 	except Exception as e:
 		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
-		if DEBUG: st.write(e)
+		if DEBUG: st.exception(e)
