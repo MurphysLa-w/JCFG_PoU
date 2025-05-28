@@ -49,8 +49,9 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-DEBUG = res_unit == "debug"
-if DEBUG:
+if not DEBUG:
+	DEBUG = res_unit == "debug"
+else:
 	DEBUG = st.toggle("DEBUG-MODE", value=True)
 
 
