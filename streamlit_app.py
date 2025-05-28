@@ -5,9 +5,6 @@ from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
-# Debug mode
-DEBUG = False
-
 # Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
@@ -24,6 +21,10 @@ dfRes = pd.DataFrame(
    ]
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
+
+# DEBUG Mode
+DEBUG = str(edited_dfRes.iat[0, 1]) == "debug"
+if DEBUG: st.write("DEBUG-MODE:" + DEBUG)
 
 # Formula Input
 st.subheader("Formel")
@@ -48,11 +49,6 @@ var_units = edited_df["Einheit"].tolist()
 var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
-
-if not DEBUG:
-	DEBUG = res_unit == "debug"
-else:
-	DEBUG = st.toggle("DEBUG-MODE", value=True)
 
 
 ### Refine the User Input
