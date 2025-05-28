@@ -51,7 +51,7 @@ var_const = edited_df["Ist Konstant"].tolist()
 
 DEBUG = res_unit == "debug"
 if DEBUG:
-	DEBUG = st.toggle("Formel in Rohform", value=True)
+	DEBUG = st.toggle("DEBUG-MODE", value=True)
 
 
 ### Refine the User Input
