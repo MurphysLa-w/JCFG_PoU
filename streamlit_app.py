@@ -5,10 +5,13 @@ from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
+# Debug mode
+DEBUG = False
+
 # Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.0.5 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.1.0 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
 ### Getting the User Input
@@ -46,6 +49,9 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
+DEBUG = res_unit == "debug"
+if DEBUG:
+	DEBUG = st.toggle("Formel in Rohform", value=True)
 
 
 ### Refine the User Input
@@ -76,6 +82,8 @@ blackList = blackList + [r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
 	blackList = blackList + [nAdd+chr(nameInd+97)]
 
+if DEBUG: st.write(formula)
+
 # Refining the Names, check for length, ambiguity
 if not hasError:
 	for nameInd, name in enumerate(var_names):
@@ -89,12 +97,13 @@ if not hasError:
 			hasError = True
 		elif any(	(name in bLname) and (nameInd != bLindex)
 					for bLindex, bLname in enumerate(blackList)):
-			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")
+			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist als Zeichenfolge nicht eindeutig genug, da sie im Namen anderer Variablen oder Steuerwörtern aus Latex (z.B. '\\frac') vorkommt. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}'", icon="🚨")		
 			hasError = True
 		else:
 			# If no error occurred replace the Variable with nAdd for processing
 			formula = formula.replace(name, r"\mathit{" + nAdd + chr(nameInd+97) + "}")
 
+if DEBUG: st.write(formula)
 
 # Other Replacements (TODO if list grows, make into Loop)
 formula = formula.replace(r"\left(", "(").replace(r"\right)", ")")
@@ -129,22 +138,27 @@ if not hasError:
 	hasError = True
 	try:
 		form = parse_latex(formula, backend="lark")
+		if DEBUG: st.write(form)
 		
 		try: # Catching the "dx-Tuple Bug"
 			diff(form, symbol_dict[nAdd+chr(0+97)])
 			hasError = False
-		except:
+		except Exception as e:
 			st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Liegt der Fehler bei einem fehlerhaften '\cdot'?", icon="🚨")
+			if DEBUG: st.write(e)
 		
-	except UnexpectedEOF:
+	except UnexpectedEOF as e:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
+		if DEBUG: st.write(e)
 	except UnexpectedCharacters as e:
-			errorStr = str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):]
-			for nameChr, orgName in enumerate(var_names):
-				errorStr = errorStr.replace(r"\mathit{"+nAdd+chr(nameChr+97)+"}", orgName)
-			st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + errorStr + "'", icon="🚨")
-	except:
+		errorStr = str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):]
+		for nameChr, orgName in enumerate(var_names):
+			errorStr = errorStr.replace(r"\mathit{"+nAdd+chr(nameChr+97)+"}", orgName)
+		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + errorStr + "'", icon="🚨")
+		if DEBUG: st.write(e)
+	except as e:
 		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
+		if DEBUG: st.write(e)
 
 
 ### The Modus Operandi
@@ -237,7 +251,9 @@ if modeC and not hasError:
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
 		
 	try:
+		if DEBUG: st.write(PoU_CalcOut)
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
+		if DEBUG: st.write(PoU_CalcOut)
 		
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null!", icon="🚨")
@@ -247,5 +263,6 @@ if modeC and not hasError:
 			st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
 			st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
 
-	except:
+	except Exception as e:
 		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
+		if DEBUG: st.write(e)
