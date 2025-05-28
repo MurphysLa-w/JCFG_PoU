@@ -156,7 +156,7 @@ if not hasError:
 			errorStr = errorStr.replace(r"\mathit{"+nAdd+chr(nameChr+97)+"}", orgName)
 		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + errorStr + "'", icon="🚨")
 		if DEBUG: st.write(e)
-	except as e:
+	except Exception as e:
 		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 		if DEBUG: st.write(e)
 
