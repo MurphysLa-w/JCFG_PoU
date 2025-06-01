@@ -246,7 +246,7 @@ if modeC and not hasError:
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "").replace(r"\left(", "(").replace(r"\right)", ")")
-		
+	PoU_Calc = PoU_Calc.replace(r" \log", "\cdot \log")
 	try:
 		if DEBUG: st.info(PoU_Calc)
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
