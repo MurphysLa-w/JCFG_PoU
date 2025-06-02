@@ -1,18 +1,57 @@
-import pandas as pd
 import re as regex
 import streamlit as st
+import pandas as pd
 from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
-# Page Header
+# Used later in Refining to wrap the log expressions to kill ambiguous Trees
+def wrap_log_expr(text):
+	result = []
+	i = 0
+	while i < len(text):
+		if text[i:i+5] == r"\log{":
+			start = i
+			i += 5
+			brace_depth = 1
+			while i < len(text) and brace_depth > 0:
+				if text[i] == "{":
+					brace_depth += 1
+				elif text[i] == "}":
+					brace_depth -= 1
+				i += 1
+			log_expr = text[start:i]
+			result.append(f"({log_expr})")
+		else:
+			result.append(text[i])
+			i += 1
+	return "".join(result)
+
+### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
 st.text("V beta 1.1.0 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
-### Getting the User Input
 
+
+### Sidebar
+# Mode Selector
+st.sidebar.header("Modi")
+modeS = st.sidebar.toggle("Ableitungen nach allen Variablen")
+modeR = st.sidebar.toggle("Formel in Rohform")
+modeD = st.sidebar.toggle("Formel mit Ableitungen")
+modeV = st.sidebar.toggle("Formel mit Fehlerwerten")
+modeC = st.sidebar.toggle("Errechneter Fehler")
+
+# Debug
+st.sidebar.subheader("DEBUG")
+DEBUG = st.sidebar.toggle("Debug-Modus")
+if DEBUG: st.info("DEBUG: Aktiv")
+
+
+
+### Getting the User Input
 # Result Input
 st.subheader("Errechnete Größe")
 dfRes = pd.DataFrame(
@@ -21,10 +60,6 @@ dfRes = pd.DataFrame(
    ]
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
-
-# DEBUG Mode
-DEBUG = str(edited_dfRes.iat[0, 1]) == "debug"
-if DEBUG: st.info("DEBUG: Aktiv")
 
 # Formula Input
 st.subheader("Formel")
@@ -52,13 +87,12 @@ var_const = edited_df["Ist Konstant"].tolist()
 
 
 ### Refine the User Input
+if DEBUG: st.info("Vor Aufbereitung:   " + str(formula))
 # Most of the Error handling happens here
 hasError = False
 
 # Replacing old names for processing
 nAdd = "roc"			# Used as a placeholder + {a,b,c,...} to allow use of complicated variable names without interrupting the Lark Translator
-
-
 
 # Check for None Type Names
 for nameInd, name in enumerate(var_names):
@@ -73,13 +107,23 @@ if len(var_names) > 26:
 	st.error("Es wurden mehr als 26 Variablen angegeben!", icon="🚨")
 	hasError = True
 
+# Error for 0 Vars
+if len(var_names) == 0:
+	st.error("Es wurden keine Variablen angegeben!", icon="🚨")
+	hasError = True
+
+# Warning about All Const
+if var_const.count(True) == len(var_names) and len(var_names) != 0:
+	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
+	hasError = True
+
+
+
 # Setting up the Blacklist
 blackList = var_names.copy()
 blackList = blackList + [r"\cdot", r"\frac", r"\mathit"]
 for nameInd, name in enumerate(var_names):
 	blackList = blackList + [nAdd+chr(nameInd+97)]
-
-if DEBUG: st.info(formula)
 
 # Refining the Names, check for length, ambiguity
 if not hasError:
@@ -87,8 +131,6 @@ if not hasError:
 		if len(name) == 1 and 'a' <= name <= 'z':
 			st.error("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist zu kurz! \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="🚨")
 			hasError = True
-		elif len(name) == 1: #Non fatal error
-			st.warning("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist sehr kurz und könnte nicht eindeutig genug sein. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="⚠️")
 		elif name not in formula:
 			st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle kommt in der Formel nicht vor!", icon="🚨")
 			hasError = True
@@ -99,8 +141,10 @@ if not hasError:
 		else:
 			# If no error occurred replace the Variable with nAdd for processing
 			formula = formula.replace(name, r"\mathit{" + nAdd + chr(nameInd+97) + "}")
+		
+		if len(name) == 1: #Non fatal error
+			st.warning("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist sehr kurz und könnte nicht eindeutig genug sein. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="⚠️")
 
-if DEBUG: st.info(formula)
 
 # Other Replacements (TODO if list grows, make into Loop)
 formula = formula.replace(r"\left(", "(").replace(r"\right)", ")")
@@ -120,10 +164,7 @@ for uncInd, uncert in enumerate(var_uncert):
 	else:
 		var_uncert[uncInd] = str(uncert)
 
-# Warning about All Const
-if var_const.count(True) == len(var_names) and len(var_names) != 0:
-	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
-
+if DEBUG: st.info("Nach Aufbereitung:   " + str(formula))
 
 
 ### Processing the Formula
@@ -135,7 +176,7 @@ if not hasError:
 	hasError = True
 	try:
 		form = parse_latex(formula, backend="lark")
-		if DEBUG: st.info(form)
+		if DEBUG: st.info("Nach Übersetzung:   " + str(form))
 		
 		try: # Catching the "dx-Tuple Bug"
 			diff(form, symbol_dict[nAdd+chr(0+97)])
@@ -159,13 +200,6 @@ if not hasError:
 
 
 ### The Modus Operandi
-# Mode Selector
-st.subheader("Modi")
-modeS = st.toggle("Ableitungen nach allen Variablen")
-modeR = st.toggle("Formel in Rohform")
-modeD = st.toggle("Formel mit Ableitungen")
-modeV = st.toggle("Formel mit Fehlerwerten")
-modeC = st.toggle("Errechneter Fehler")
 
 if hasError: # Interrupt if error
 	st.error("Korrigieren sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
@@ -246,10 +280,17 @@ if modeC and not hasError:
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
 		PoU_Calc = PoU_Calc.replace(r"\begin{split} &", "").replace(r"\end{split}", "").replace(r"\\ &", "")
+	
+	# Refining
+	PoU_Calc = PoU_Calc.replace(r"\left(", "(").replace(r"\right)", ")") 			#Replace ()
+	PoU_Calc = regex.sub(r"(?<=[^+\-*\/({t]) \\log", r" \\cdot \\log" , PoU_Calc)	#Add * before log if missing
+	PoU_Calc = regex.sub(r"\) \(", r") \\cdot (" , PoU_Calc)						#Add * between () ()
+	PoU_Calc = wrap_log_expr(PoU_Calc)												#Add make \log{} to (\log{})
+	
 	try:
-		if DEBUG: st.info(PoU_Calc)
+		if DEBUG: st.info("Nach 2. Aufbereitung:   " + str(PoU_Calc))
 		PoU_CalcOut = str(parse_latex(PoU_Calc, backend="lark"))
-		if DEBUG: st.info(PoU_CalcOut)
+		if DEBUG: st.info("Nach Berechnung:   " + str(PoU_CalcOut))
 		
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null!", icon="🚨")
