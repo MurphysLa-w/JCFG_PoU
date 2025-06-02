@@ -1,5 +1,5 @@
 import pandas as pd
-import re
+import re as regex
 import streamlit as st
 from sympy import *
 from sympy.parsing.latex import parse_latex
