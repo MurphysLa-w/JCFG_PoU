@@ -33,9 +33,10 @@ st.title("Fehlerfortpflanzung nach Gauß")
 st.text("V beta 1.1.0 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
 
-
-
 ### Sidebar
+# Anouncements
+st.sidebar.warning("Achtung, bestehende Fehler: \n\n - e-Funktionen nicht implementiert \n\n - Natürliche Logarythmen ln als Logarythmus log ausgegeben, keine Auswirkungen auf die Berechnungen \n\n - Punkte als Dezimalzeichen verwendet")
+
 # Mode Selector
 st.sidebar.header("Modi")
 modeS = st.sidebar.toggle("Ableitungen nach allen Variablen")
