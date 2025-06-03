@@ -27,16 +27,16 @@ def wrap_log_expr(text):
 			i += 1
 	return "".join(result)
 
+
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.1.0 Fehlerrechner von LaTex, nach LaTex.")
-st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfe deine Rechnungen!")
+st.text("V beta 1.2.0 Fehlerrechner von LaTex, nach LaTex.")
+st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
+
+
 
 ### Sidebar
-# Anouncements
-st.sidebar.warning("Achtung, bestehende Fehler: \n\n - e-Funktionen nicht implementiert \n\n - Natürliche Logarythmen ln als Logarythmus log ausgegeben, keine Auswirkungen auf die Berechnungen \n\n - Punkte als Dezimalzeichen verwendet")
-
 # Mode Selector
 st.sidebar.header("Modi")
 modeS = st.sidebar.toggle("Ableitungen nach allen Variablen")
@@ -50,6 +50,8 @@ st.sidebar.subheader("DEBUG")
 DEBUG = st.sidebar.toggle("Debug-Modus")
 if DEBUG: st.info("DEBUG: Aktiv")
 
+
+hasError = False
 
 
 ### Getting the User Input
@@ -66,6 +68,11 @@ edited_dfRes = st.data_editor(dfRes, hide_index=True)
 st.subheader("Formel")
 formula = st.text_input("Formel um Größe zu Errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
 st.latex(formula)
+
+# Warning if Misused
+if "=" in formula:
+	st.warning("Die Formel enthält ein '=' Zeichen. In das Formelfeld gehört ausschließlich die Formel um die Größe zu berechnen, die darüber definiert wurde", icon="⚠️")
+	hasError = True
 
 # Table for Var Input
 st.subheader("Variablen")
@@ -90,7 +97,6 @@ var_const = edited_df["Ist Konstant"].tolist()
 ### Refine the User Input
 if DEBUG: st.info("Vor Aufbereitung:   " + str(formula))
 # Most of the Error handling happens here
-hasError = False
 
 # Replacing old names for processing
 nAdd = "roc"			# Used as a placeholder + {a,b,c,...} to allow use of complicated variable names without interrupting the Lark Translator
@@ -102,6 +108,7 @@ for nameInd, name in enumerate(var_names):
 		name = ""
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
+
 
 # Error about too many Vars
 if len(var_names) > 26:
@@ -115,16 +122,15 @@ if len(var_names) == 0:
 
 # Warning about All Const
 if var_const.count(True) == len(var_names) and len(var_names) != 0:
-	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="⚠️")
+	st.warning("Alle Variablen wurden als Konstant gelistet!", icon="🚨")
 	hasError = True
-
 
 
 # Setting up the Blacklist
 blackList = var_names.copy()
-blackList = blackList + [r"\cdot", r"\frac", r"\mathit"]
+blackList = blackList + [r"\cdot", r"\frac", r"\mathit", r"\log", r"\ln", r"e^"]
 for nameInd, name in enumerate(var_names):
-	blackList = blackList + [nAdd+chr(nameInd+97)]
+	blackList = blackList + [r"\mathit{"+nAdd+chr(nameInd+97)+"}"]
 
 # Refining the Names, check for length, ambiguity
 if not hasError:
@@ -147,8 +153,9 @@ if not hasError:
 			st.warning("Der Name der " + str(nameInd+1) + ". Variable in der Tabelle ist sehr kurz und könnte nicht eindeutig genug sein. \n\n Verlängern Sie z.B. den Namen 'c' zu 'c_\\text{a}' oder verwenden sie einen anderen.", icon="⚠️")
 
 
-# Other Replacements (TODO if list grows, make into Loop)
-formula = formula.replace(r"\left(", "(").replace(r"\right)", ")")
+# Other Replacements
+formula = formula.replace(r"\left(", "(").replace(r"\right)", ")")	#Replace \left( \right) with ()
+formula = formula.replace("e^", r"\exp")							#Replace e^ with \exp to make an exponential function
 
 # Preventing scientific format in small floats by casting into strings
 for valInd, value in enumerate(var_values):
@@ -168,6 +175,7 @@ for uncInd, uncert in enumerate(var_uncert):
 if DEBUG: st.info("Nach Aufbereitung:   " + str(formula))
 
 
+
 ### Processing the Formula
 # Process Names are put in a dictionary
 symbol_dict = {nAdd+chr(nameChr+97): symbols(nAdd+chr(nameChr+97)) for nameChr in range(0,len(var_names))}
@@ -179,29 +187,36 @@ if not hasError:
 		form = parse_latex(formula, backend="lark")
 		if DEBUG: st.info("Nach Übersetzung:   " + str(form))
 		
-		try: # Catching the "dx-Tuple Bug"
+		# Catching the "dx-Tuple Bug"
+		try:
 			diff(form, symbol_dict[nAdd+chr(0+97)])
 			hasError = False
-		except Exception as e:
+		except AttributeError as e:
 			st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Liegt der Fehler bei einem fehlerhaften '\cdot'?", icon="🚨")
 			if DEBUG: st.exception(e)
+		
 		
 	except UnexpectedEOF as e:
 		st.error("Eine Klammer wurde geöffnet, aber nicht geschlossen", icon="🚨")
 		if DEBUG: st.exception(e)
+		
 	except UnexpectedCharacters as e:
 		errorStr = str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):]
 		for nameChr, orgName in enumerate(var_names):
 			errorStr = errorStr.replace(r"\mathit{"+nAdd+chr(nameChr+97)+"}", orgName)
 		st.error("Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt in der Nähe von: '" + errorStr + "'", icon="🚨")
 		if DEBUG: st.exception(e)
+	
+	except SympifyError as e:
+		st.error("Es ist nicht eindeutig genug, welcher Exponent/Logarythmus wo zu gehört. \n\n Setzen Sie zur Sicherheit um jede Exponentenbasis und jeden logarythmierten Term '()' KLammern um Eindeutigkeit zu schaffen. \n\n - e^{X} + Y -> (e^{X}) + Y \n\n - \ln{X} + Y -> (\ln{X}) + Y usw.", icon="🚨")
+		if DEBUG: st.exception(e)
+	
 	except Exception as e:
 		st.error("Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält", icon="🚨")
 		if DEBUG: st.exception(e)
 
 
 ### The Modus Operandi
-
 if hasError: # Interrupt if error
 	st.error("Korrigieren sie zuerst die Fehler in der Formel und der Tabelle", icon="🚨")
 
@@ -267,6 +282,14 @@ if modeV and not hasError:
 		PoU_Val = PoU_Val.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]) + " \mathrm{" + str(var_units[nameChr]) + "}")
 	PoU_Val = r"\begin{equation} \Delta "  + res_name + " = " + PoU_Val + r"\end{equation}" # Modify for document
 	
+	# Refining
+	PoU_Val = regex.sub(r"(?<=\d) (?=\d)", r" \\cdot " , PoU_Val)	#Replace spaces between numbers with a \cdot
+	
+	# Converting to German notation
+	PoU_Val = PoU_Val.replace(".", ",")
+	if "log" in PoU_Val:
+		PoU_Val = PoU_Val.replace("log", "ln") 
+	
 	st.latex(PoU_Val)
 	st.code(PoU_Val, language="latex")
 	if "nan" in PoU_Val:
@@ -284,9 +307,10 @@ if modeC and not hasError:
 	
 	# Refining
 	PoU_Calc = PoU_Calc.replace(r"\left(", "(").replace(r"\right)", ")") 			#Replace ()
+	PoU_Calc = PoU_Calc.replace("e^", r"\exp")										#Replace e^ with \exp to make an exponential function
 	PoU_Calc = regex.sub(r"(?<=[^+\-*\/({t]) \\log", r" \\cdot \\log" , PoU_Calc)	#Add * before log if missing
 	PoU_Calc = regex.sub(r"\) \(", r") \\cdot (" , PoU_Calc)						#Add * between () ()
-	PoU_Calc = wrap_log_expr(PoU_Calc)												#Add make \log{} to (\log{})
+	PoU_Calc = wrap_log_expr(PoU_Calc)												#Make \log{} to (\log{})
 	
 	try:
 		if DEBUG: st.info("Nach 2. Aufbereitung:   " + str(PoU_Calc))
@@ -295,12 +319,19 @@ if modeC and not hasError:
 		
 		if PoU_CalcOut == "nan":
 			st.error("Division durch Null!", icon="🚨")
-		if "Tree" in PoU_CalcOut:
+		elif "Tree" in PoU_CalcOut:
 			st.warning("Die Formel liefert kein eindeutiges Ergebnis. \n\n Lösungen: " + PoU_CalcOut.replace("Tree('_ambig', ","")[:-1] , icon="⚠️")
+		elif "nan" in PoU_Calc:
+			st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen. \n\n " + PoU_Calc, icon="⚠️")
 		else:
+			# Converting to German notation
+			PoU_Calc = PoU_Calc.replace(".", ",")
+			
 			st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
 			st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
 
 	except Exception as e:
-		st.error("Kann es sein das Werte in der Tabelle fehlen? Wenn nicht prüfe die Variablen und Formeln", icon="🚨")
+		st.error("Formel konnte nicht ausgerechnet werden. Prüfen Sie Formel und Variablen", icon="🚨")
 		if DEBUG: st.exception(e)
+
+st.caption("This tool is for informational purposes only. I cannot be held responsible for invalid results. Do your own math too!")
