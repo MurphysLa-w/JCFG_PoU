@@ -1,6 +1,7 @@
 import re as regex
 import streamlit as st
 import pandas as pd
+import requests
 from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
@@ -31,7 +32,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.2.0 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.0 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -95,7 +96,9 @@ var_const = edited_df["Ist Konstant"].tolist()
 
 
 ### Refine the User Input
-if DEBUG: st.info("Vor Aufbereitung:   " + str(formula))
+if DEBUG:
+	st.info("Vor Aufbereitung:   " + str(formula))
+	bug_formula = formula
 # Most of the Error handling happens here
 
 # Replacing old names for processing
@@ -333,5 +336,35 @@ if modeC and not hasError:
 	except Exception as e:
 		st.error("Formel konnte nicht ausgerechnet werden. Prüfen Sie Formel und Variablen", icon="🚨")
 		if DEBUG: st.exception(e)
+
+# Bug Reporting to a google form
+if DEBUG:
+	google_form_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSeVAsZtEX3mRK8sPX_FiMO2mYMY2CVXj8nm41YOtwZyEcbuSg/formResponse"
+	st.sidebar.header("Bug Melden")
+	with st.sidebar.form("Bug Melden"):
+		bug_kind = st.selectbox("Art:", ("Falsches Ergebnis", "Eingabe-/Verarbeitungsfehler", "Sonstiges"),)
+		bug_desc = st.text_area("Eigene Beschreibung:")
+		submit = st.form_submit_button("Absenden")
+	
+	if submit:
+		bug_report = {
+		"entry.320798035"	: bug_kind,
+		"entry.1002995150"	: bug_desc,
+		"entry.322557982"	: bug_formula,
+		"entry.1381747175"	: var_names,
+		"entry.1326671232"	: var_units,
+		"entry.1324014979"	: var_values,
+		"entry.1897719759"	: var_uncert,
+		"entry.101700465"	: var_const,
+		}
+		res = requests.post(google_form_url, data=bug_report)
+		if res.status_code == 200:
+			st.sidebar.success("Erfolgreich gesendet")
+		else:
+			st.sidebar.warning("Konnte nicht gesendet werden. Versuchen Sie es später erneut")
+	st.sidebar.caption("Das Melden Tool dient zur Entwicklung und Verbesserung dieses Rechners. Erfasst werden nur die derzeitigen Eingaben in den Rechner, daher kann keine direkte Rückmelung gegeben werden. Gerne können jedoch Anmerkungen und Kritik hierüber angebracht werden. \n\n Bitte keinen Spam")
+
+
+
 
 st.caption("This tool is for informational purposes only. I cannot be held responsible for invalid results. Do your own math too!")
