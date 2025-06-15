@@ -32,7 +32,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.0 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.1 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
