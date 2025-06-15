@@ -238,6 +238,11 @@ else: # This part is always run to check for errors in simplify
 				PoU_SingleDeriv = PoU_SingleDeriv.replace(nAdd+chr(nameChr+97), orgName)
 			PoU_SingleDeriv = r"\begin{equation}\frac{\partial " + res_name + r"}{\partial " + name + "} = " + PoU_SingleDeriv + r"\end{equation}" # Modify for document
 			
+			# Converting to German notation
+			PoU_SingleDeriv = PoU_SingleDeriv.replace(".", ",")
+			if "log" in PoU_SingleDeriv:
+				PoU_SingleDeriv = PoU_SingleDeriv.replace("log", "ln") 
+			
 			st.latex(PoU_SingleDeriv)
 			st.code(PoU_SingleDeriv, language="latex")
 		
@@ -272,6 +277,12 @@ if (modeD or modeV or modeC) and not hasError: # Required for V, C
 	PoU_Diff = r"\begin{equation} \Delta " + res_name + " = " + PoU_Diff + r"\end{equation}" # Modify for document
 	if modeD:
 		st.subheader("Formel mit Ableitungen")
+		
+		# Converting to German notation
+		PoU_Diff = PoU_Diff.replace(".", ",")
+		if "log" in PoU_Diff:
+			PoU_Diff = PoU_Diff.replace("log", "ln") 
+		
 		st.latex(PoU_Diff)
 		st.code(PoU_Diff, language="latex")
 
@@ -302,7 +313,9 @@ if modeV and not hasError:
 if modeC and not hasError:
 	### Calculate the Uncertainty
 	st.subheader("Errechneter Fehler")
+	if DEBUG: st.info("Vor Aufbereitung:   " + str(PoU_Calc))
 	PoU_Calc = PoU_Calc[3:]
+	PoU_Calc = regex.sub(r"(?<!Delta) (?=roc[a-z])", r" \\cdot " , PoU_Calc)		#Add * beteen two vars
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
