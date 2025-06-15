@@ -32,7 +32,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.1 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.2 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -364,11 +364,11 @@ if DEBUG:
 		"entry.320798035"	: bug_kind,
 		"entry.1002995150"	: bug_desc,
 		"entry.322557982"	: bug_formula,
-		"entry.1381747175"	: var_names,
-		"entry.1326671232"	: var_units,
-		"entry.1324014979"	: var_values,
-		"entry.1897719759"	: var_uncert,
-		"entry.101700465"	: var_const,
+		"entry.1381747175"	: str(var_names)[1:-2].replace("', '", "\n"),
+		"entry.1326671232"	: str(var_units)[1:-2].replace("', '", "\n"),
+		"entry.1324014979"	: str(var_values)[1:-2].replace("', '", "\n"),
+		"entry.1897719759"	: str(var_uncert)[1:-2].replace("', '", "\n"),
+		"entry.101700465"	: str(var_const)[1:-1].replace(", ", "\n"),
 		}
 		res = requests.post(google_form_url, data=bug_report)
 		if res.status_code == 200:
