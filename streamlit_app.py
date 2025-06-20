@@ -33,7 +33,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.3 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.2 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -97,10 +97,11 @@ var_const = edited_df["Ist Konstant"].tolist()
 
 
 ### Refine the User Input
+# Most of the Error handling happens here
+
 if DEBUG:
 	st.info("Vor Aufbereitung:   " + str(formula))
-	bug_formula = formula
-# Most of the Error handling happens here
+bug_formula = formula
 
 # Replacing old names for processing
 nAdd = "roc"			# Used as a placeholder + {a,b,c,...} to allow use of complicated variable names without interrupting the Lark Translator
@@ -371,10 +372,10 @@ if DEBUG:
 		"entry.320798035"	: bug_kind,
 		"entry.1002995150"	: bug_desc,
 		"entry.322557982"	: bug_formula,
-		"entry.1381747175"	: str(var_names)[1:-2].replace("', '", "\n"),
-		"entry.1326671232"	: str(var_units)[1:-2].replace("', '", "\n"),
-		"entry.1324014979"	: str(var_values)[1:-2].replace("', '", "\n"),
-		"entry.1897719759"	: str(var_uncert)[1:-2].replace("', '", "\n"),
+		"entry.1381747175"	: str(var_names)[2:-2].replace("', '", "\n"),
+		"entry.1326671232"	: str(var_units)[2:-2].replace("', '", "\n"),
+		"entry.1324014979"	: str(var_values)[2:-2].replace("', '", "\n"),
+		"entry.1897719759"	: str(var_uncert)[2:-2].replace("', '", "\n"),
 		"entry.101700465"	: str(var_const)[1:-1].replace(", ", "\n"),
 		}
 		
@@ -394,22 +395,23 @@ if DEBUG:
 # URL for the Log
 google_log_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSd17V0q-9yM1DKa7cpxGGiRbi-NnSL2VNcdH4RPE8tcxSDh4Q/formResponse"
 # Log Interval for open sessions in seconds
-LOG_AFTER = 3600
+LOG_AFTER = 600
 
 # Get the time
 now = datetime.datetime.utcnow()
 
 # If new Session, log immediately and set states
-if "session_start" not in st.session_state:
+if "session_start" not in st.session_state and bug_formula != r"\frac{m_\text{Wasser}}{V_\text{Wasser}}":
 	requests.post(google_log_url, data={"entry.644797731":"Session_Ping"})
-	st.session_state.session_start = now
+	st.session_state.session_start = True
 	st.session_state.last_logged = now
-
+	
 # If session still open and the last log was long ago a rerun triggers another log
-elapsed = now - st.session_state.last_logged
-if elapsed.total_seconds() > LOG_AFTER:
-	requests.post(google_log_url, data={"entry.644797731":"Rerun_Ping"})
-	st.session_state.last_logged = now
+elif "session_start" in st.session_state:
+	elapsed = now - st.session_state.last_logged
+	if elapsed.total_seconds() > LOG_AFTER:
+		requests.post(google_log_url, data={"entry.644797731":"Rerun_Ping"})
+		st.session_state.last_logged = now
 
 
 
