@@ -2,6 +2,7 @@ import re as regex
 import streamlit as st
 import pandas as pd
 import requests
+import datetime
 from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
@@ -32,7 +33,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.2 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.3 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -350,15 +351,21 @@ if modeC and not hasError:
 		st.error("Formel konnte nicht ausgerechnet werden. Prüfen Sie Formel und Variablen", icon="🚨")
 		if DEBUG: st.exception(e)
 
-# Bug Reporting to a google form
+
+
+### Bug Reporting to a google form
 if DEBUG:
+	# URL for the bug report form
 	google_form_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSeVAsZtEX3mRK8sPX_FiMO2mYMY2CVXj8nm41YOtwZyEcbuSg/formResponse"
+	
+	# Setting Up the Sidebar
 	st.sidebar.header("Bug Melden")
 	with st.sidebar.form("Bug Melden"):
 		bug_kind = st.selectbox("Art:", ("Falsches Ergebnis", "Eingabe-/Verarbeitungsfehler", "Sonstiges"),)
 		bug_desc = st.text_area("Eigene Beschreibung:")
 		submit = st.form_submit_button("Absenden")
 	
+	# Gathering the sent data
 	if submit:
 		bug_report = {
 		"entry.320798035"	: bug_kind,
@@ -370,13 +377,39 @@ if DEBUG:
 		"entry.1897719759"	: str(var_uncert)[1:-2].replace("', '", "\n"),
 		"entry.101700465"	: str(var_const)[1:-1].replace(", ", "\n"),
 		}
+		
+		# Posting it to the form
 		res = requests.post(google_form_url, data=bug_report)
+		
+		# Check sucess
 		if res.status_code == 200:
 			st.sidebar.success("Erfolgreich gesendet")
 		else:
 			st.sidebar.warning("Konnte nicht gesendet werden. Versuchen Sie es später erneut")
 	st.sidebar.caption("Das Melden Tool dient zur Entwicklung und Verbesserung dieses Rechners. Erfasst werden nur die derzeitigen Eingaben in den Rechner, daher kann keine direkte Rückmelung gegeben werden. Gerne können jedoch Anmerkungen und Kritik hierüber angebracht werden. \n\n Bitte keinen Spam")
 
+
+
+### Logging visit timestamps
+# URL for the Log
+google_log_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSd17V0q-9yM1DKa7cpxGGiRbi-NnSL2VNcdH4RPE8tcxSDh4Q/formResponse"
+# Log Interval for open sessions in seconds
+LOG_AFTER = 3600
+
+# Get the time
+now = datetime.datetime.utcnow()
+
+# If new Session, log immediately and set states
+if "session_start" not in st.session_state:
+	requests.post(google_log_url, data={"entry.644797731":"Session_Ping"})
+	st.session_state.session_start = now
+	st.session_state.last_logged = now
+
+# If session still open and the last log was long ago a rerun triggers another log
+elapsed = now - st.session_state.last_logged
+if elapsed.total_seconds() > LOG_AFTER:
+	requests.post(google_log_url, data={"entry.644797731":"Rerun_Ping"})
+	st.session_state.last_logged = now
 
 
 
