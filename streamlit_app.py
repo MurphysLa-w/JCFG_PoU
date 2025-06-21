@@ -33,7 +33,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.4 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.5 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -317,7 +317,7 @@ if modeC and not hasError:
 	st.subheader("Errechneter Fehler")
 	if DEBUG: st.info("Vor Aufbereitung:   " + str(PoU_Calc))
 	PoU_Calc = PoU_Calc[3:]
-	PoU_Calc = regex.sub(r"(?<!Delta) (?=roc[a-z])", r" \\cdot " , PoU_Calc)		#Add * beteen two vars
+	PoU_Calc = regex.sub(r"(?<!Delta)(?<!+) (?=roc[a-z])", r" \\cdot " , PoU_Calc)		#Add * beteen two vars
 	for nameChr, name in enumerate(var_names):
 		PoU_Calc = PoU_Calc.replace(r"\Delta " + nAdd+chr(nameChr+97), " * (" + str(var_uncert[nameChr]) + ")" )
 		PoU_Calc = PoU_Calc.replace(nAdd+chr(nameChr+97), str(var_values[nameChr]))
