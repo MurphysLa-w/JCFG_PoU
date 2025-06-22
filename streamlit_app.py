@@ -33,7 +33,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.5 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.3.6 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -328,7 +328,9 @@ if modeC and not hasError:
 	PoU_Calc = PoU_Calc.replace("e^", r"\exp")										#Replace e^ with \exp to make an exponential function
 	PoU_Calc = regex.sub(r"(?<=[^+\-*\/({t]) \\log", r" \\cdot \\log" , PoU_Calc)	#Add * before log if missing
 	PoU_Calc = regex.sub(r"\) \(", r") \\cdot (" , PoU_Calc)						#Add * between () ()
+	PoU_Calc = regex.sub(r"\^\{2\} \(", r"^{2} \cdot (" , PoU_Calc)					#Add * between ^{2} (	TODO This is only for squares
 	PoU_Calc = wrap_log_expr(PoU_Calc)												#Make \log{} to (\log{})
+	
 	
 	try:
 		if DEBUG: st.info("Nach 2. Aufbereitung:   " + str(PoU_Calc))
