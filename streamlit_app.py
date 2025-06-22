@@ -328,7 +328,7 @@ if modeC and not hasError:
 	PoU_Calc = PoU_Calc.replace("e^", r"\exp")										#Replace e^ with \exp to make an exponential function
 	PoU_Calc = regex.sub(r"(?<=[^+\-*\/({t]) \\log", r" \\cdot \\log" , PoU_Calc)	#Add * before log if missing
 	PoU_Calc = regex.sub(r"\) \(", r") \\cdot (" , PoU_Calc)						#Add * between () ()
-	PoU_Calc = regex.sub(r"\^\{2\} \(", r"^{2} \cdot (" , PoU_Calc)					#Add * between ^{2} (	TODO This is only for squares
+	PoU_Calc = regex.sub(r"\^\{2\} \(", r"^\{2\} \\cdot (" , PoU_Calc)					#Add * between ^{2} (	TODO This is only for squares
 	PoU_Calc = wrap_log_expr(PoU_Calc)												#Make \log{} to (\log{})
 	
 	
