@@ -1,9 +1,10 @@
-import re as regex
-import streamlit as st
-import pandas as pd
 import requests
 import datetime
+import re as regex
+import pandas as pd
+import streamlit as st
 from sympy import *
+from io import StringIO
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
@@ -39,6 +40,15 @@ st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen
 
 
 ### Sidebar
+st.sidebar.header("Editor")
+## Setting Up Editor Buttons
+with st.sidebar:
+	editor = st.expander("Werkzeuge")
+	col1, col2, col3, col4 = editor.columns(4 ,vertical_alignment="center")
+	
+	undo = col1.button("",icon=":material/undo:", help="Rückgängig", use_container_width=True)
+	redo = col2.button("",icon=":material/redo:", help="Wiederherstellen", use_container_width=True)
+	
 # Mode Selector
 st.sidebar.header("Modi")
 modeS = st.sidebar.toggle("Ableitungen nach allen Variablen")
@@ -50,58 +60,35 @@ modeC = st.sidebar.toggle("Errechneter Fehler")
 # Debug
 st.sidebar.subheader("DEBUG")
 DEBUG = st.sidebar.toggle("Debug-Modus")
-if DEBUG: st.info("DEBUG: Aktiv")
-
+DEVMODE = False
+if DEBUG:
+	st.info("DEBUG: Aktiv")
+	DEVMODE = st.sidebar.toggle("Tech-Debug")
 
 hasError = False
 
 
+
+
 ### Getting the User Input
-# Result Input
-st.subheader("Errechnete Größe")
-dfRes = pd.DataFrame(
-    [
-       {"Formelzeichen": r"\rho_\text{Wasser}", "Einheit": "g \cdot ml^{-1}"},
-   ]
-)
-edited_dfRes = st.data_editor(dfRes, hide_index=True)
-st.latex(str(edited_dfRes.iat[0, 0]) + "~/~\mathrm{" + str(edited_dfRes.iat[0, 1]) + "}")
-
-# Formula Input
-st.subheader("Formel")
-formula = st.text_input("Formel um Größe zu Errechnen:", r"\frac{m_\text{Wasser}}{V_\text{Wasser}}")
-st.latex(formula)
-
-# Warning if Misused
-if "=" in formula:
-	st.warning("Die Formel enthält ein '=' Zeichen. In das Formelfeld gehört ausschließlich die Formel um die Größe zu berechnen, die darüber definiert wurde", icon="⚠️")
-	hasError = True
-
-# Table for Var Input
-st.subheader("Variablen")
-
-
-
-
-# Setting Up the History and defining defaults
+## Setting Up the History and defining defaults
+# History is a list with all previous states. Every state is a list containing the result table(dict), the formula(str) and the var table(list of dict) in this order
 if "index" not in st.session_state:
 	st.session_state.index = 0
 if "history" not in st.session_state:
-	st.session_state.history = [pd.DataFrame([
-	        {"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100.0, "Fehler": 0.1, "Ist Konstant": False},
-	        {"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100.0, "Fehler": 0.01, "Ist Konstant": False}
-	    ])
+	st.session_state.history = [#hist
+		[#state
+			[{"Formelzeichen": r"\rho_\text{Wasser}", "Einheit": "g \cdot ml^{-1}"}],
+			
+			r"\frac{m_\text{Wasser}}{V_\text{Wasser}}",
+			
+			[{"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100.0, "Fehler": 0.1, "Ist Konstant": False},
+			{"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100.0, "Fehler": 0.01, "Ist Konstant": False}]
+		]
 	]
 if "data" not in st.session_state:
 	st.session_state.data = st.session_state.history[st.session_state.index]
 
-
-# Setting Up Buttons
-col1, col2 = st.columns([1,10])
-with col1:
-	undo = st.button("",icon=":material/undo:", help="Rückgängig")
-with col2:
-	redo = st.button("",icon=":material/redo:", help="Wiederherstellen")
 
 # Undo moves Index back and shows datastate at index
 if undo and st.session_state.index != 0:
@@ -113,30 +100,105 @@ if redo and st.session_state.index != len(st.session_state.history)-1:
 	st.session_state.index += 1
 	st.session_state.data = st.session_state.history[st.session_state.index]
 
-# Displaying current state
-edited_df = st.data_editor(st.session_state.data, num_rows="dynamic")
+
+## Displaying current state
+# Result Input with dict from state as base
+st.subheader("Errechnete Größe")
+edited_dfRes = st.data_editor(pd.DataFrame(st.session_state.data[0]), hide_index=True)
+# Compress the row back to dictlist with one row
+dictRes = edited_dfRes.to_dict(orient='records')
+st.latex(dictRes[0]["Formelzeichen"] + "~/~\mathrm{" + dictRes[0]["Einheit"] + "}")
 
 
-# Updating history if df has been edited
-if not undo and not st.session_state.history[st.session_state.index].equals(pd.DataFrame(edited_df)):
+# Formula Input with str from state as base
+st.subheader("Formel")
+formula = st.text_input("Formel um Größe zu Errechnen:", st.session_state.data[1])
+st.latex(formula)
+
+# Table for Var Input with list of dict from state as base
+st.subheader("Variablen")
+edited_df = st.data_editor(pd.DataFrame(st.session_state.data[2]), num_rows="dynamic")
+# Compress back to dictlist
+dictVar = edited_df.to_dict(orient='records')
+
+
+# Get the current state
+current_state = [dictRes, formula, dictVar]
+
+
+## Updating history if anything has been edited
+if not undo and str(st.session_state.history[st.session_state.index]) != str(current_state):
+	
 	# Delete History that might now be "in the future" as every edit is the latest change and most recent in history
 	while len(st.session_state.history) > st.session_state.index+1:
 		st.session_state.history.pop()
+	
 	# Append this change to history and move the index to "now"
-	st.session_state.history.append(pd.DataFrame(edited_df))
+	st.session_state.history.append(current_state)
 	st.session_state.index = len(st.session_state.history)-1
+	
 	# Update state and rerun to make sure its the new base state for the st.data_editor
 	st.session_state.data = st.session_state.history[st.session_state.index]
 	st.rerun()
 
-if DEBUG:
-	with st.expander("Verlauf"):
-		st.write(st.session_state.index)
-		st.write(st.session_state.history)
 
-# Retrieve the User Input
-res_name = str(edited_dfRes.iat[0, 0])
-res_unit = str(edited_dfRes.iat[0, 1])
+
+
+### Export and Import
+# Export via String
+str_import = ""
+export_inputs = col3.button("",icon=":material/output_circle:", help="Exportiere Eingaben als String", use_container_width=True, disabled=not DEVMODE)
+if export_inputs:
+	csv_buffer = StringIO()
+	edited_dfRes.to_csv(csv_buffer, index=False)
+	csv_string = csv_buffer.getvalue() + "%%%" + formula
+	csv_buffer = StringIO()
+	edited_df.to_csv(csv_buffer, index=False)
+	csv_string = csv_string + "%%%" + csv_buffer.getvalue()
+	editor.text_input("Import/Export als String", value=csv_string.replace("\n", "§§§"))
+	
+elif DEVMODE:
+	str_import = editor.text_input("Import/Export als String", placeholder="Importiere Eingaben")
+
+
+# Import via string
+# Check and warn before imports
+str_import_check = [match.start() for match in regex.finditer("%%%", str_import)]
+import_inputs = col4.button("",icon=":material/input_circle:", help="Importiere Eingaben als String", use_container_width=True, disabled=(len(str_import_check) != 2) or not DEVMODE)
+if len(str_import_check) == 2:
+	editor.warning("Import only if you know what you are doing", icon="❗️")
+	
+# Import
+if import_inputs:
+	try:
+		str_import = str_import.replace("§§§", "\n")
+	
+		# Get the three state sections and read them as csv into a DataFrame and convert to dict, then safe to history and update it
+		st.session_state.history.append([pd.read_csv(StringIO(str_import.split("%%%")[0])).to_dict(orient='records'),
+		str_import.split("%%%")[1],
+		pd.read_csv(StringIO(str_import.split("%%%")[2])).to_dict(orient='records')])
+		
+		st.session_state.index = len(st.session_state.history)-1
+		
+		# Update state and rerun to make sure its the new base state for the st.data_editor
+		st.session_state.data = st.session_state.history[st.session_state.index]
+	except:
+		st.error("Import fehlgeschlagen", icon="🚨")
+	else:
+		st.rerun()
+
+# Show History
+if DEVMODE:
+	with st.expander("DEBUG Verlauf"):
+		st.info("Aktueller Index:   " + str(st.session_state.index))
+		st.json(st.session_state.history, expanded=1)
+
+
+
+
+### Retrieve the User Input
+res_name = str(dictRes[0]["Formelzeichen"])
+res_unit = str(dictRes[0]["Einheit"])
 var_names = edited_df["Formelzeichen"].tolist()
 var_units = edited_df["Einheit"].tolist()
 var_values = edited_df["Messwert"].tolist()
@@ -168,6 +230,11 @@ for nameInd, name in enumerate(var_names):
 		st.error("Die " + str(nameInd+1) + ". Variable in der Tabelle ist unbenannt!", icon="🚨")
 		hasError = True
 
+
+# Warning if Misused
+if "=" in formula:
+	st.warning("Die Formel enthält ein '=' Zeichen. In das Formelfeld gehört ausschließlich die Formel um die Größe zu berechnen, die darüber definiert wurde", icon="⚠️")
+	hasError = True
 
 # Error about too many Vars
 if len(var_names) > 26:
@@ -425,9 +492,19 @@ if DEBUG:
 	
 	# Gathering the sent data
 	if submit:
+		# Export the Inputs as string
+		bug_csv_buffer = StringIO()
+		edited_dfRes.to_csv(bug_csv_buffer, index=False)
+		bug_str = bug_csv_buffer.getvalue() + "%%%" + bug_formula
+		bug_csv_buffer = StringIO()
+		edited_df.to_csv(bug_csv_buffer, index=False)
+		bug_str = bug_str + "%%%" + bug_csv_buffer.getvalue()
+		bug_str = bug_str.replace("\n", "§§§")
+		
 		bug_report = {
 		"entry.320798035"	: bug_kind,
 		"entry.1002995150"	: bug_desc,
+		"entry.74602100"	: bug_str,
 		"entry.322557982"	: bug_formula,
 		"entry.1381747175"	: str(var_names)[2:-2].replace("', '", "\n"),
 		"entry.1326671232"	: str(var_units)[2:-2].replace("', '", "\n"),
