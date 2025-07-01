@@ -33,7 +33,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.3.6 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.4.0 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -65,6 +65,7 @@ dfRes = pd.DataFrame(
    ]
 )
 edited_dfRes = st.data_editor(dfRes, hide_index=True)
+st.latex(str(edited_dfRes.iat[0, 0]) + "~/~\mathrm{" + str(edited_dfRes.iat[0, 1]) + "}")
 
 # Formula Input
 st.subheader("Formel")
@@ -78,13 +79,60 @@ if "=" in formula:
 
 # Table for Var Input
 st.subheader("Variablen")
-df = pd.DataFrame(
-    [
-        {"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100.0, "Fehler": 0.1, "Ist Konstant": False},
-        {"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100.0, "Fehler": 0.01, "Ist Konstant": False},
-   ]
-)
-edited_df = st.data_editor(df, num_rows="dynamic")
+
+
+
+
+# Setting Up the History and defining defaults
+if "index" not in st.session_state:
+	st.session_state.index = 0
+if "history" not in st.session_state:
+	st.session_state.history = [pd.DataFrame([
+	        {"Formelzeichen": r"m_\text{Wasser}", "Einheit": "g", "Messwert": 100.0, "Fehler": 0.1, "Ist Konstant": False},
+	        {"Formelzeichen": r"V_\text{Wasser}", "Einheit": "ml", "Messwert": 100.0, "Fehler": 0.01, "Ist Konstant": False}
+	    ])
+	]
+if "data" not in st.session_state:
+	st.session_state.data = st.session_state.history[st.session_state.index]
+
+
+# Setting Up Buttons
+col1, col2 = st.columns([1,20])
+with col1:
+	undo = st.button("",icon=":material/undo:", help="Rückgängig")
+with col2:
+	redo = st.button("",icon=":material/redo:", help="Wiederherstellen")
+
+# Undo moves Index back and shows datastate at index
+if undo and st.session_state.index != 0:
+	st.session_state.index += -1
+	st.session_state.data = st.session_state.history[st.session_state.index]
+
+# Undo moves Index forward and shows datastate at index
+if redo and st.session_state.index != len(st.session_state.history)-1:
+	st.session_state.index += 1
+	st.session_state.data = st.session_state.history[st.session_state.index]
+
+# Displaying current state
+edited_df = st.data_editor(st.session_state.data, num_rows="dynamic")
+
+
+# Updating history if df has been edited
+if not undo and not st.session_state.history[st.session_state.index].equals(pd.DataFrame(edited_df)):
+	# Delete History that might now be "in the future" as every edit is the latest change and most recent in history
+	while len(st.session_state.history) > st.session_state.index+1:
+		st.session_state.history.pop()
+	# Append this change to history and move the index to "now"
+	st.session_state.history.append(pd.DataFrame(edited_df))
+	st.session_state.index = len(st.session_state.history)-1
+	# Update state and rerun to make sure its the new base state for the st.data_editor
+	st.session_state.data = st.session_state.history[st.session_state.index]
+	st.rerun()
+
+if DEBUG:
+	with st.expander("Verlauf"):
+		st.write(st.session_state.index)
+		st.write(st.session_state.history)
 
 # Retrieve the User Input
 res_name = str(edited_dfRes.iat[0, 0])
@@ -94,6 +142,12 @@ var_units = edited_df["Einheit"].tolist()
 var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
+
+with st.expander("Variablen in LaTex"):
+	for i, var in enumerate(var_names):
+		st.latex(str(var_names[i]) + "~/~\mathrm{" + str(var_units[i]) + "}=" + str(var_values[i]) + "\pm" + str(var_uncert[i]))
+
+
 
 
 ### Refine the User Input
@@ -346,7 +400,7 @@ if modeC and not hasError:
 			st.warning("Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen. \n\n " + PoU_Calc, icon="⚠️")
 		else:
 			# Converting to German notation
-			PoU_Calc = PoU_Calc.replace(".", ",")
+			PoU_CalcOut = PoU_CalcOut.replace(".", ",")
 			
 			st.latex(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}")
 			st.code(r"\begin{equation} \Delta " + res_name + " = \pm" + PoU_CalcOut + r" \end{equation}", language="latex")
