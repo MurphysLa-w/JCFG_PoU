@@ -97,7 +97,7 @@ if "data" not in st.session_state:
 
 
 # Setting Up Buttons
-col1, col2 = st.columns([1,5])
+col1, col2 = st.columns([1,1])
 with col1:
 	undo = st.button("",icon=":material/undo:", help="Rückgängig")
 with col2:
