@@ -34,7 +34,7 @@ def wrap_log_expr(text):
 ### Page Header
 st.set_page_config(page_title="JCFG",)
 st.title("Fehlerfortpflanzung nach Gauß")
-st.text("V beta 1.4.0 Fehlerrechner von LaTex, nach LaTex.")
+st.text("V beta 1.4.1 Fehlerrechner von LaTex, nach LaTex.")
 st.text("DISCLAIMER: Bullshit In, Bullshit Out. Überprüfen Sie ihre Rechnungen!")
 
 
@@ -205,7 +205,7 @@ var_values = edited_df["Messwert"].tolist()
 var_uncert = edited_df["Fehler"].tolist()
 var_const = edited_df["Ist Konstant"].tolist()
 
-with st.expander("Variablen in LaTex"):
+with st.expander("Variablen in LaTex Form"):
 	for i, var in enumerate(var_names):
 		st.latex(str(var_names[i]) + "~/~\mathrm{" + str(var_units[i]) + "}=" + str(var_values[i]) + "\pm" + str(var_uncert[i]))
 
@@ -479,49 +479,61 @@ if modeC and not hasError:
 
 
 ### Bug Reporting to a google form
-if DEBUG:
-	# URL for the bug report form
-	google_form_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSeVAsZtEX3mRK8sPX_FiMO2mYMY2CVXj8nm41YOtwZyEcbuSg/formResponse"
-	
-	# Setting Up the Sidebar
-	st.sidebar.header("Bug Melden")
-	with st.sidebar.form("Bug Melden"):
-		bug_kind = st.selectbox("Art:", ("Falsches Ergebnis", "Eingabe-/Verarbeitungsfehler", "Sonstiges"),)
+# URL for the bug report form
+google_form_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSeVAsZtEX3mRK8sPX_FiMO2mYMY2CVXj8nm41YOtwZyEcbuSg/formResponse"
+
+# Dialog window for the report
+@st.dialog("Feedback / Bug melden")
+def bug_dialog():
+	# Setting Up the Dialog
+	with st.form("Bug Melden"):
+		bug_kind = st.selectbox("Art:", ("Feedback", "Falsches Ergebnis", "Eingabe-/Verarbeitungsfehler", "Sonstiges"),)
 		bug_desc = st.text_area("Eigene Beschreibung:")
+		bug_email = st.text_input("Email Adresse für Rückmeldungen/Hilfe", placeholder=("(Optional)"))
 		submit = st.form_submit_button("Absenden")
+		
+		# Gathering the sent data
+		if submit:
+			# Export the Inputs as string
+			bug_csv_buffer = StringIO()
+			edited_dfRes.to_csv(bug_csv_buffer, index=False)
+			bug_str = bug_csv_buffer.getvalue() + "%%%" + bug_formula
+			bug_csv_buffer = StringIO()
+			edited_df.to_csv(bug_csv_buffer, index=False)
+			bug_str = bug_str + "%%%" + bug_csv_buffer.getvalue()
+			bug_str = bug_str.replace("\n", "§§§")
+			
+			bug_report = {
+			"entry.320798035"	: bug_kind,
+			"entry.1002995150"	: bug_desc,
+			"entry.519864065"	: bug_email,
+			"entry.74602100"	: bug_str,
+			"entry.322557982"	: bug_formula,
+			"entry.1381747175"	: str(var_names)[2:-2].replace("', '", "\n"),
+			"entry.1326671232"	: str(var_units)[2:-2].replace("', '", "\n"),
+			"entry.1324014979"	: str(var_values)[2:-2].replace("', '", "\n"),
+			"entry.1897719759"	: str(var_uncert)[2:-2].replace("', '", "\n"),
+			"entry.101700465"	: str(var_const)[1:-1].replace(", ", "\n"),
+			}
+		
+			# Posting it to the form
+			res = requests.post(google_form_url, data=bug_report)
+			
+			# Check sucess
+			if res.status_code == 200 and bug_email != "":
+					st.success("Erfolgreich gesendet \n\n Wir werden uns baldmöglichst zurückmelden. \n\n Die Emailadresse wird sofort nach Bearbeitung gelöscht werden.")
+			elif res.status_code == 200:
+				st.success("Erfolgreich gesendet")
+			else:
+				st.warning("Konnte nicht gesendet werden. Versuchen Sie es später erneut")
+	st.caption("Das Melden Tool dient zur Entwicklung und Verbesserung dieses Rechners. Gerne können auch Anmerkungen und Kritik hierüber angebracht werden. Erfasst werden nur die derzeitigen Eingaben in den Rechner, daher kann keine direkte Rückmelung gegeben werden, wenn keine Emailadresse angegeben wird. Emailadressen werden sofort nach Bearbeitung gelöscht.  \n\n Bitte keinen Spam")
+
+# Button to call the dialog
+if st.sidebar.button("Feedback / Bug Melden", type="primary"):
+	bug_dialog()
 	
-	# Gathering the sent data
-	if submit:
-		# Export the Inputs as string
-		bug_csv_buffer = StringIO()
-		edited_dfRes.to_csv(bug_csv_buffer, index=False)
-		bug_str = bug_csv_buffer.getvalue() + "%%%" + bug_formula
-		bug_csv_buffer = StringIO()
-		edited_df.to_csv(bug_csv_buffer, index=False)
-		bug_str = bug_str + "%%%" + bug_csv_buffer.getvalue()
-		bug_str = bug_str.replace("\n", "§§§")
-		
-		bug_report = {
-		"entry.320798035"	: bug_kind,
-		"entry.1002995150"	: bug_desc,
-		"entry.74602100"	: bug_str,
-		"entry.322557982"	: bug_formula,
-		"entry.1381747175"	: str(var_names)[2:-2].replace("', '", "\n"),
-		"entry.1326671232"	: str(var_units)[2:-2].replace("', '", "\n"),
-		"entry.1324014979"	: str(var_values)[2:-2].replace("', '", "\n"),
-		"entry.1897719759"	: str(var_uncert)[2:-2].replace("', '", "\n"),
-		"entry.101700465"	: str(var_const)[1:-1].replace(", ", "\n"),
-		}
-		
-		# Posting it to the form
-		res = requests.post(google_form_url, data=bug_report)
-		
-		# Check sucess
-		if res.status_code == 200:
-			st.sidebar.success("Erfolgreich gesendet")
-		else:
-			st.sidebar.warning("Konnte nicht gesendet werden. Versuchen Sie es später erneut")
-	st.sidebar.caption("Das Melden Tool dient zur Entwicklung und Verbesserung dieses Rechners. Erfasst werden nur die derzeitigen Eingaben in den Rechner, daher kann keine direkte Rückmelung gegeben werden. Gerne können jedoch Anmerkungen und Kritik hierüber angebracht werden. \n\n Bitte keinen Spam")
+
+
 
 
 
@@ -549,4 +561,4 @@ elif "session_start" in st.session_state:
 
 
 
-st.caption("This tool is for informational purposes only. I cannot be held responsible for invalid results. Do your own math too!")
+st.caption("This tool is for informational and educational purposes only. It cannot be held responsible for invalid results. Do your own math too!")
