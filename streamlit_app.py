@@ -8,6 +8,8 @@ from sympy import *
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
+print(st.__version__)
+
 # Used later in Refining to wrap the log expressions to kill ambiguous Trees
 def wrap_log_expr(text):
 	result = []
