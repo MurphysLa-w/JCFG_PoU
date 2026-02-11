@@ -1,6 +1,5 @@
 sympy
 pandas
-streamlit
-altair<5
+streamlit==1.54.0
 lark-parser
 antlr4-python3-runtime
