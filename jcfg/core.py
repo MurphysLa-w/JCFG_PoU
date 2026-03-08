@@ -1,10 +1,11 @@
 # Core functions and logic for JCFG
 
 import re as regex
-#import sympy as sp
+import pandas as pd
 from typing import List
 from dataclasses import dataclass
-from .utils import ExitCode, to_str_safe
+from .utils import to_str_safe
+from .exit_codes import ExitCode
 from sympy import symbols, latex, simplify, diff
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
@@ -59,7 +60,10 @@ class PoUEngine:
 	def init_blacklist(self):
 		blacklist = []
 		for var in self.input.variables:
-			blacklist.append(var.name)
+			if var.name == None:
+				blacklist.append("")
+			else:
+				blacklist.append(var.name)
 		for i in range(len(self.input.variables)):
 			blacklist.append(r"\mathit{"+self.nAdd+chr(i+97)+"}")
 		blacklist += self.LATEX_RESERVED
@@ -67,33 +71,46 @@ class PoUEngine:
 	
 	def validate_input(self):
 		codes = []
+		
+		# Only exactly one "=" is allowed
 		if self.input.equation.count("=") != 1:
-			codes.append(ExitCode(201, "Die Formel enthält kein/zu viele '=' Zeichen! \n\n Die Formel muss nach folgendem Muster aufgebaut sein: '[Größe] = [Formel um Größe zu berechnen]'"))
+			codes.append(ExitCode(201))
+			
+		# More than 26 Vars have been given, the char() system cant handle more
 		if len(self.input.variables) >= 26:
-			codes.append(ExitCode(202,"Es wurden mehr als 26 Variablen angegeben!"))
+			codes.append(ExitCode(202))
+			
+		# No vars have been given	
 		if len(self.input.variables) == 0:
-			codes.append(ExitCode(203,"Es wurden keine Variablen angegeben!"))
+			codes.append(ExitCode(203))
+			
+		# All vars are constant, no deriv can be calculated	
 		elif all(var.const for var in self.input.variables):
-			codes.append(ExitCode(204,"Alle Variablen wurden als Konstant gelistet!"))
+			codes.append(ExitCode(204))
+			
 		for i, var in enumerate(self.input.variables, start=1):
-			if var.name == None or var.name in ["", " ", "  "]:
-				codes.append(ExitCode(204,"Die " + str(i) + ". Variable in der Tabelle ist unbenannt!"))
+			# Var is not named
+			if var.name == None or str(var.name).strip() == "":
+				codes.append(ExitCode(205, {"index": str(i)}))
+				
+			# Var is not in the equation
 			elif var.name not in self.input.equation:
-				codes.append(ExitCode(206,"Die " + str(i) + ". Variabl ein der Tabelle ('"+str(var.name)+"') kommt in der Formel nicht vor!"))
+				codes.append(ExitCode(206, {"index": str(i), "var": str(var.name)}))
+				
+			# Var name is in range of X in rocX
 			elif len(var.name) == 1 and 'a' <= var.name <= 'z':
-				codes.append(ExitCode(205,"Der Name der " + str(i) + ". Variable in der Tabelle ('"+str(var.name)+"') ist zu kurz! \n\n"+
-					"Verlängern Sie z.B. den Namen '"+str(var.name)+"' zu '"+str(var.name)+"_1' oder verwenden Sie einen anderen."))
+				codes.append(ExitCode(207, {"index": str(i), "var": str(var.name)}))
+				
 			else:
 				match = next(((bLi, bLname) for bLi, bLname in enumerate(self.blacklist, start=1) if (var.name in bLname) and (i != bLi)), None)
+				# Var name is in string of blacklisted names
 				if match:
 					bLi, bLname = match
-					codes.append(ExitCode(207,"Die " + str(i) + ". Variable in der Tabelle ('"+str(var.name)+"') ist als Zeichenfolge nicht eindeutig genug, "+
-						"da sie bereits im Namen anderer Variablen oder Steuerwörtern aus LaTex (z.B. '\\frac') vorkommt. \n\n"+
-						"'"+str(var.name)+"' ist u.a. Teil der "+str(bLi)+". Variable '"+bLname+"' \n\n"+
-						"Verlängern Sie z.B. den Namen '"+str(var.name)+"' zu '"+str(var.name)+"_1' oder verwenden Sie einen anderen."))
+					codes.append(ExitCode(208, {"index": str(i), "var": str(var.name), "bl_index":str(bLi), "bl_name":str(bLname)}))
+				
+				# Var name is very short and prone to conflicts
 				elif len(var.name) == 1:
-					codes.append(ExitCode(105,"Der Name der " + str(i) + ". Variable in der Tabelle ('"+str(var.name)+"') ist sehr kurz! \n\n"+
-						"Verlängern Sie z.B. den Namen '"+str(var.name)+"' zu '"+str(var.name)+"_1' oder verwenden Sie einen anderen."))
+					codes.append(ExitCode(107, {"index": str(i), "var": str(var.name)}))
 		return codes
 		
 	def refine_input(self):
@@ -116,41 +133,42 @@ class PoUEngine:
 		try:
 			self.symbol_expr = parse_latex(self.norm_expr, backend="lark")
 			
-			# Catching the "dx-Tuple Bug"
-			# A 'd' before any character makes a diff and creates a tuple unsuable further on
+			# Try differentiating
 			try:
-				# Try differentiating
 				diff(self.symbol_expr, self.symbol_dict[self.nAdd+'a'])
 				
+			# Sympy does not know where ie a \log ends
 			except sp.SympifyError:
-				codes.append(ExitCode(213, "Es ist nicht eindeutig genug, welcher Exponent/Logarythmus wo zu gehört. \n\n Setzen Sie zur Sicherheit um jede Exponentenbasis und jeden logarythmierten Term '()' KLammern um Eindeutigkeit zu schaffen. \n\n - e^{X} + Y -> (e^{X}) + Y \n\n - \\ln{X} + Y -> (\\ln{X}) + Y usw."))
-			# If thats not possible(i.e symbol_expr has become a tuple) catch it
+				codes.append(ExitCode(213))
+				
+			# A 'd' before any character makes a diff and creates an unusable tuple
 			except Exception as e:
-				codes.append(ExitCode(211, "Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält \n\n Liegt der Fehler bei einem fehlerhaften '\\cdot'?"))
-			
+				codes.append(ExitCode(211))
+		
+		# Bracket has not been unclosed
 		except UnexpectedEOF as e:
-			codes.append(ExitCode(212, "Eine Klammer wurde geöffnet, aber nicht geschlossen"))
-			print(self.norm_expr)
-			print(e)
-			
+			codes.append(ExitCode(212))
+		
+		# Unsupported Expression
 		except UnexpectedCharacters as e:
 			errorStr = str(e).split("\n")[2][int(len(str(e).split("\n")[3])-1):]
 			for i, var in enumerate(self.input.variables):
 				errorStr = errorStr.replace(r"\mathit{"+self.nAdd+chr(i+97)+"}", var.name)
-			codes.append(ExitCode(212, "Die Formel enthält Abschnitte die: \n\n - Rein Formativ \n\n - Falsch geschrieben \n\n - Teil von Variablennamen sind. \n\n Bitte korrigieren Sie den Fehler oder geben sie die Variablen vollständig an. \n\n Der Fehler liegt vor oder am Anfang von: '" + errorStr + "'"))
+			codes.append(ExitCode(214, {"errorStr":errorStr}))
 		
+		# Sympy does not know where ie a \log ends
 		except sp.SympifyError:
-			codes.append(ExitCode(213, "Es ist nicht eindeutig genug, welcher Exponent/Logarythmus wo zu gehört. \n\n Setzen Sie zur Sicherheit um jede Exponentenbasis und jeden logarythmierten Term '()' KLammern um Eindeutigkeit zu schaffen. \n\n - e^{X} + Y -> (e^{X}) + Y \n\n - \\ln{X} + Y -> (\\ln{X}) + Y usw."))
+			codes.append(ExitCode(213))
 		
+		# General Error
 		except:
-			codes.append(ExitCode(210, "Die Formel konnte nicht verarbeitet werden, es kann sein, dass sie Fehler enthält"))
+			codes.append(ExitCode(210))
 		
 		return codes
 	
 	def modeS(self):
 		all_singleDerivs = []
 		# Derive for every var (skip Constants)
-		print(self.input.variables)
 		for i, var in enumerate(self.input.variables):
 			if var.const:
 				continue
@@ -239,20 +257,25 @@ class PoUEngine:
 			for i, var in enumerate(self.input.variables):
 				deriv = diff(self.symbol_expr, self.symbol_dict[self.nAdd+chr(i+97)])
 				self.cumul_uncert += (deriv * var.uncert)**2
+			self.cumul_uncert = self.cumul_uncert**0.5		#get sqrt
 			self.result_str = to_str_safe(self.cumul_uncert.subs(self.numeric_dict))
 			
-			
+			# Is Infinite or NaN
 			if "zoo" in self.result_str:
-				codes.append(ExitCode(123, "Ergebnis ist Unendlich. Division durch Null?"))
+				codes.append(ExitCode(121))
 			if "nan" in self.result_str:
-				codes.append(ExitCode(121, "Ergebnis ist NaN. Fehlen Messwerte oder wird durch Null dividiert?"))
+				codes.append(ExitCode(122))
+			
+			# Has multiple solutions
 			if "Tree" in self.result_str:
-				codes.append(ExitCode(122, "Die Formel liefert kein eindeutiges Ergebnis. \n\n Lösungen: " + self.result_str.replace("Tree('_ambig', ","")[:-1]))
+				codes.append(ExitCode(123, {"solutions":str(self.result_str.replace("Tree('_ambig', ","")[:-1])}))
 			else:
 				latex_display = r"\begin{equation} \Delta " + self.res_name + r" = \pm " + self.result_str.replace(".", ",") + r" \notag \end{equation}"
 				latex_code = r"\begin{equation} \Delta " + self.res_name + r" = \pm " + self.result_str.replace(".", ",") + r"\end{equation}"
-		except Exception as e:
-			codes.append(ExitCode(220, "Formel konnte nicht ausgerechnet werden. Prüfen Sie Formel und Variablen."))
+		
+		# General Error
+		except:
+			codes.append(ExitCode(220))
 			
 		return PoUOutput(latex_display=latex_display, latex_code=latex_code), codes
 		
