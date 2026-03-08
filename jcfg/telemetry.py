@@ -3,7 +3,7 @@
 import datetime
 import requests
 import streamlit as st
-from .utils import ExitCode
+from .exit_codes import ExitCode
 
 bug_report_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSeVAsZtEX3mRK8sPX_FiMO2mYMY2CVXj8nm41YOtwZyEcbuSg/formResponse"
 telemetry_url = "https://docs.google.com/forms/u/0/d/e/1FAIpQLSd17V0q-9yM1DKa7cpxGGiRbi-NnSL2VNcdH4RPE8tcxSDh4Q/formResponse"
@@ -22,18 +22,18 @@ def submit_bug_report(bug_kind, bug_desc, bug_email, current_state):
 	
 	# Check sucess
 	if res.status_code == 200 and bug_email != "":
-		codes.append(ExitCode(333, "Erfolgreich gesendet \n\n Wir werden uns baldmöglichst zurückmelden :)"))
+		codes.append(ExitCode(333))
 	elif res.status_code == 200:
-		codes.append(ExitCode(332, "Erfolgreich gesendet"))
+		codes.append(ExitCode(332))
 	else:
-		codes.append(ExitCode(134, "Konnte nicht gesendet werden. Versuchen Sie es später erneut"))
+		codes.append(ExitCode(134))
 	return codes
 
 def log(eq):
 	now = datetime.datetime.now(datetime.UTC)
-	if eq==0:
+	if eq!=r"\rho_\text{Wasser} = \frac{m_\text{Wasser}}{V_\text{Wasser}}" and "log" not in st.session_state:
 		st.session_state.log = now
-		requests.post(telemetry_url, data={"entry.99200264": now.strftime("%m%d%H"), "entry.644797731":"Load_Ping"})
+		requests.post(telemetry_url, data={"entry.99200264": now.strftime("%m%d%H"), "entry.1358837103":eq, "entry.644797731":"Load_Ping"})
 	elif eq!=r"\rho_\text{Wasser} = \frac{m_\text{Wasser}}{V_\text{Wasser}}" and (now-st.session_state.log).total_seconds() > 300:
 		st.session_state.log = now
-		requests.post(telemetry_url, data={"entry.99200264": now.strftime("%m%d%H"), "entry.644797731":"Rerun_Ping"})
+		requests.post(telemetry_url, data={"entry.99200264": now.strftime("%m%d%H"), "entry.1358837103":eq, "entry.644797731":"Rerun_Ping"})
