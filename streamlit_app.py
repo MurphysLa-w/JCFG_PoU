@@ -1,6 +1,6 @@
 # Streamlit-App for JCFG Propagation of Uncertainty Calculator
 
-__version__ = "1.6.0-beta"
+__version__ = "1.6.1-beta"
 
 import pandas as pd
 import streamlit as st
@@ -8,7 +8,8 @@ import streamlit as st
 from jcfg.telemetry import submit_bug_report
 from jcfg.core import Variable, PoUInput, PoUOutput, PoUEngine
 from jcfg.session_manager import HistoryManager
-from jcfg.utils import ExitCode, display_ExitCodes, to_float_safe
+from jcfg.utils import to_float_safe
+from jcfg.exit_codes import ExitCode, display_ExitCodes
 
 # Page Header
 st.set_page_config(page_title="JCFG")
@@ -105,7 +106,8 @@ if len(str_import) != 0 and import_inputs:
 	if hist.importString(str_import):
 		st.rerun()
 	else:
-		editor.error("Import fehlgeschlagen \n\n ExitCode: 231", icon="🚨️")
+		# Import failed
+		display_ExitCodes([ExitCode(231)], DEBUG)
 
 ## Bug-Reporting
 # Dialog window for the report
@@ -126,9 +128,10 @@ def bug_dialog():
 if st.sidebar.button("Support / Bug Melden", type="primary"):
 	bug_dialog()
 
+# Show additional Infos in DEVMODE
 # Show History
 if DEVMODE:
-	with st.expander("DEBUG Verlauf"):
+	with st.expander("Tech-DEBUG Verlauf"):
 		st.info("Aktueller Index:   " + str(hist.index()))
 		st.json(st.session_state.history, expanded=1)
 
