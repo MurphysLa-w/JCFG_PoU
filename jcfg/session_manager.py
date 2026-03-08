@@ -4,7 +4,6 @@
 import ast
 import streamlit as st
 from .telemetry import log
-from .utils import ExitCode
 
 class HistoryManager:
 	def __init__(self, session_state):
@@ -23,7 +22,6 @@ class HistoryManager:
 	
 	def _init_defaults(self):
 		if "index" not in self._state:
-			log(0)
 			self._state.index = 0
 		if "history" not in self._state:
 			self._state.history = self._default_state()
