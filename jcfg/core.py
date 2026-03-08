@@ -95,22 +95,22 @@ class PoUEngine:
 				
 			# Var is not in the equation
 			elif var.name not in self.input.equation:
-				codes.append(ExitCode(206, {"index": str(i), "var": str(var.name)}))
+				codes.append(ExitCode(206, {"index": str(i), "name": str(var.name)}))
 				
 			# Var name is in range of X in rocX
 			elif len(var.name) == 1 and 'a' <= var.name <= 'z':
-				codes.append(ExitCode(207, {"index": str(i), "var": str(var.name)}))
+				codes.append(ExitCode(207, {"index": str(i), "name": str(var.name)}))
 				
 			else:
 				match = next(((bLi, bLname) for bLi, bLname in enumerate(self.blacklist, start=1) if (var.name in bLname) and (i != bLi)), None)
 				# Var name is in string of blacklisted names
 				if match:
 					bLi, bLname = match
-					codes.append(ExitCode(208, {"index": str(i), "var": str(var.name), "bl_index":str(bLi), "bl_name":str(bLname)}))
+					codes.append(ExitCode(208, {"index": str(i), "name": str(var.name), "bl_index":str(bLi), "bl_name":str(bLname)}))
 				
 				# Var name is very short and prone to conflicts
 				elif len(var.name) == 1:
-					codes.append(ExitCode(107, {"index": str(i), "var": str(var.name)}))
+					codes.append(ExitCode(107, {"index": str(i), "name": str(var.name)}))
 		return codes
 		
 	def refine_input(self):
@@ -245,7 +245,7 @@ class PoUEngine:
 		latex_code = r"\begin{equation} \Delta "  + self.res_name + " = " + PoU_Val + r"\end{equation}"
 		
 		if "nan" in PoU_Val:
-			codes.append(ExitCode(121, "Nan in der Formel gefunden! Überprüfen sie ob Messwerte fehlen."))
+			codes.append(ExitCode(122))
 		return PoUOutput(latex_display=latex_display, latex_code=latex_code), codes
 		
 	def modeC(self):
