@@ -127,7 +127,7 @@ class PoUEngine:
 		
 		# Process Names are put in a dictionary
 		self.symbol_dict = {self.nAdd+chr(i+97): symbols(self.nAdd+chr(i+97)) for i, var in enumerate(self.input.variables)}
-		self.numeric_dict = {self.symbol_dict[self.nAdd+chr(i+97)]: var.value for i, var in enumerate(self.input.variables)}#if var.value is not None
+		self.numeric_dict = {self.symbol_dict[self.nAdd+chr(i+97)]: var.value for i, var in enumerate(self.input.variables)} #if var.value is not None
 		
 		# Make Symbolic Expression (Translate with Lark)
 		try:
