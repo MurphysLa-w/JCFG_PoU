@@ -64,6 +64,19 @@ class HistoryManager:
 		self._state.index += 1
 	
 	
+	def reset_to(self, str_reset):
+		self._state.index = 0
+		if str_reset == "tutorial":
+			self._state.history = [#hist
+					[#state
+						r"",
+						[{"Formelzeichen": r"", "Einheit": "", "Messwert": 0, "Fehler": 0, "Ist Konstant": False}]
+					]
+				]
+		else:
+			self._state.history = self._default_state()
+	
+	
 	def importString(self, str_import):
 		history = self._state.history
 		self.str_import = str_import
