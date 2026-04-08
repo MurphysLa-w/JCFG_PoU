@@ -255,6 +255,8 @@ class PoUEngine:
 		
 		try:
 			for i, var in enumerate(self.input.variables):
+				if var.const:
+					continue
 				deriv = diff(self.symbol_expr, self.symbol_dict[self.nAdd+chr(i+97)])
 				self.cumul_uncert += (deriv * var.uncert)**2
 			self.cumul_uncert = self.cumul_uncert**0.5		#get sqrt
