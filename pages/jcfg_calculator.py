@@ -1,6 +1,6 @@
 # Streamlit-App for JCFG Propagation of Uncertainty Calculator
 
-__version__ = "1.7.0-beta"
+__version__ = "1.7.1-beta"
 
 import pandas as pd
 import streamlit as st
@@ -70,7 +70,7 @@ st.sidebar.subheader("DEBUG")
 DEBUG = st.sidebar.toggle("Debug Modus")
 DEVMODE = False
 if DEBUG:
-	DEVMODE = st.sidebar.toggle("Dev Modus")
+	DEVMODE = st.sidebar.toggle("Entwickleroptionen")
 	st.info("DEBUG: Aktiv")
 	st.sidebar.info("DEBUG: Aktiv")
 
@@ -227,10 +227,13 @@ if modeV:
 if modeC:
 	st.subheader("Errechneter Fehler")
 	PoU_Calc, codes = engine.modeC()
-	if DEBUG: st.info("Vor Einsetzen:   " + str(engine.cumul_uncert))
+	if DEBUG: st.info("Vor Einsetzen:   ```" + str(engine.cumul_uncert)+"```")
 	if DEBUG: st.info("Nach Einsetzen:   " + str(engine.result_str))
 	st.latex(PoU_Calc.latex_display)
 	st.code(PoU_Calc.latex_code, language="latex")
+	st.code(PoU_Calc.expr_code)
+	st.caption(":violet-badge[Beta] Ausdruck für die Berechnung mit variablen Messwerten")
 	display_ExitCodes(codes, DEBUG)
 
+st.space("small")
 st.caption("This tool is for informational and educational purposes only. It cannot be held responsible for invalid results. Do your own math too!")

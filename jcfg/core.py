@@ -27,6 +27,7 @@ class PoUInput:
 class PoUOutput:
 	latex_display: str
 	latex_code: str
+	expr_code: str = ""
 
 class PoUEngine:
 	LATEX_RESERVED = [
@@ -56,6 +57,7 @@ class PoUEngine:
 		
 		self.cumul_uncert = 0
 		self.result_str = ""
+		self.calcExpr_str = ""
 	
 	def init_blacklist(self):
 		blacklist = []
@@ -123,6 +125,7 @@ class PoUEngine:
 		for i, var in enumerate(self.input.variables):
 			self.norm_expr = self.norm_expr.replace(var.name, r"\mathit{" + self.nAdd + chr(i+97) + "}")
 		self.norm_expr = self.norm_expr.replace(r"\left(", "(").replace(r"\right)", ")")	#Replace \left( \right) with ()
+		self.norm_expr = self.norm_expr.replace("\ln", r"\log")								#Replace \ln with \log
 		self.norm_expr = self.norm_expr.replace("e^", r"\exp")								#Replace e^ with \exp to make an exponential function
 		
 		# Process Names are put in a dictionary
@@ -255,12 +258,15 @@ class PoUEngine:
 		
 		try:
 			for i, var in enumerate(self.input.variables):
-				if var.const:
+				if var.const: # Don't derive for constants
 					continue
 				deriv = diff(self.symbol_expr, self.symbol_dict[self.nAdd+chr(i+97)])
 				self.cumul_uncert += (deriv * var.uncert)**2
 			self.cumul_uncert = self.cumul_uncert**0.5		#get sqrt
 			self.result_str = to_str_safe(self.cumul_uncert.subs(self.numeric_dict))
+			self.calcExpr_str = str(self.cumul_uncert)
+			for i, var in enumerate(self.input.variables):
+				self.calcExpr_str = self.calcExpr_str.replace(self.nAdd+chr(i+97), "["+var.name+"]")
 			
 			# Is Infinite or NaN
 			if "zoo" in self.result_str:
@@ -279,5 +285,5 @@ class PoUEngine:
 		except:
 			codes.append(ExitCode(220))
 			
-		return PoUOutput(latex_display=latex_display, latex_code=latex_code), codes
+		return PoUOutput(latex_display=latex_display, latex_code=latex_code, expr_code=self.calcExpr_str), codes
 		
