@@ -243,7 +243,7 @@ if is_state(15):
 	DEBUG = st.sidebar.toggle("Debug-Modus")
 	DEVMODE = False
 	if DEBUG:
-		DEVMODE = st.sidebar.toggle("Tech-Debug")
+		DEVMODE = st.sidebar.toggle("Entwickleroptionen")
 		st.info("DEBUG: Aktiv")
 		st.sidebar.info("DEBUG: Aktiv")
 	
@@ -300,7 +300,7 @@ if is_state(15):
 	# Show additional Infos in DEVMODE
 	# Show History
 	if DEVMODE:
-		with st.expander("Tech-DEBUG Verlauf"):
+		with st.expander("DEBUG Verlauf"):
 			st.info("Aktueller Index:   " + str(hist.index()))
 			st.json(st.session_state.history, expanded=1)
 	
