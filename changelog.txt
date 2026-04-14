@@ -1,0 +1,107 @@
+#########################
+	Version Changelog
+#########################
+
+2.0.2
+	Added support for pi
+	
+2.0.1
+	Added first draft of a Expression output for calculating	
+
+2.0.0
+	Changed to Page layout
+	Added the Tutorial page
+	Minor Fixes
+	
+pre-2.0.1 aka. 1.6.1
+	Migrated ExitCodes to new file
+	Changed ExitCode Rendering
+	Changed Logging Form
+	Fixed Calculation (missing sqrt)
+	Minor Fixes
+
+pre-2.0.0 aka. 1.6.0
+	Codebase entirely rewritten
+	logic moved to core, app only holds ui
+
+1.5.0
+	Merged value and formula into one
+	Added \cdot for better visuals
+	Reworked import/export code
+	Reworked history manipulation
+	Prevent undo/redo if end of history has been reached
+	Added more debug infos
+	Minor changes in Code Layout etc.
+	
+1.4.1
+	Moved the Bug Report to a dialog window to free the sidebar
+	Added Optional Email
+	
+1.4.0 Full
+	Added full support for undo/redo
+	Added Import/Export
+	Added the history
+	Added the "DevMode" as an advanced DEBUG tool
+
+1.4.0
+	Added a history for the var table
+	- undo/redo buttons
+	Added LaTex view for the var table
+	Fixed notation in result (scientific is still active for now)
+
+1.3.6
+	Insert of \cdot after squared
+
+1.3.5
+	Fixed + \cdot
+
+1.3.4
+	Trial of a fix for 5min relog of sessions
+
+1.3.3
+	Addition of a better log
+
+1.3.2
+	\n in the Bug report for easy copy/paste
+
+1.3.1
+	Added \cdot between two vars where once was a space
+	Changed every log to ln in the output
+	Problem: log10 needs implementation
+
+1.3.0
+	Added a Bug Report Function over a Google Form
+	This is for testing only and will be removed reworked in the future
+
+1.2.0
+	Added Support for e^
+	Added = detector in formula
+	Enhanced the Blacklist
+	Added Error Messages for Trees
+	Added \cdot between spaced numbers
+
+1.1.0 (For Real)
+	Added the Sidebar
+	- Moved modes there
+	- Included Debug as a mode
+	Finally (hopefully) fixed the Trees
+	- Insertion of \cdot in the formula
+	- Wrapping of \log in brackets to prevent trees
+	Added the DEBUG function
+
+1.0.5
+	Code Changes
+	Fixed the small floats
+	Found and fixed the dx-Tuple Bug
+	Better error message for finding the source
+	Better error handling in general
+
+1.0.4
+	Fixed numbers in formulas
+	Fixed small floats being shown in scientific format
+	Multiple None Values now don't show Type exception
+
+1.0.3
+	Added \Delta for the Uncertainty
+	Added Support for \left( \right)
+	

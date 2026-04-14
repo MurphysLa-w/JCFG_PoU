@@ -1,6 +1,6 @@
 # Entry Level Page Manager
 
-__version__ = "1.7.0-beta"
+__version__ = "2.0.2-beta"
 
 import streamlit as st
 

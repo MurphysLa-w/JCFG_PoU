@@ -6,9 +6,10 @@ from typing import List
 from dataclasses import dataclass
 from .utils import to_str_safe
 from .exit_codes import ExitCode
-from sympy import symbols, latex, simplify, diff
+from sympy import pi, N, symbols, latex, simplify, diff, SympifyError
 from sympy.parsing.latex import parse_latex
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
+
 
 @dataclass
 class Variable:
@@ -122,10 +123,15 @@ class PoUEngine:
 		
 		# Normalize Expression (Replace Names wth symbols, remove unknown symbols)
 		self.norm_expr = self.expression
+		
+		#TODO This is a hotfix to get pi available until the lark grammar has been made accessible in the webapp
+		if r"\pi" in self.norm_expr:
+			self.input.variables.append(Variable(name=r"\pi", unit="", value=N(pi), uncert=0, const=True))
+		
 		for i, var in enumerate(self.input.variables):
 			self.norm_expr = self.norm_expr.replace(var.name, r"\mathit{" + self.nAdd + chr(i+97) + "}")
 		self.norm_expr = self.norm_expr.replace(r"\left(", "(").replace(r"\right)", ")")	#Replace \left( \right) with ()
-		self.norm_expr = self.norm_expr.replace("\ln", r"\log")								#Replace \ln with \log
+		self.norm_expr = self.norm_expr.replace(r"\ln", r"\log")							#Replace \ln with \log
 		self.norm_expr = self.norm_expr.replace("e^", r"\exp")								#Replace e^ with \exp to make an exponential function
 		
 		# Process Names are put in a dictionary
@@ -141,7 +147,7 @@ class PoUEngine:
 				diff(self.symbol_expr, self.symbol_dict[self.nAdd+'a'])
 				
 			# Sympy does not know where ie a \log ends
-			except sp.SympifyError:
+			except SympifyError:
 				codes.append(ExitCode(213))
 				
 			# A 'd' before any character makes a diff and creates an unusable tuple
@@ -160,12 +166,13 @@ class PoUEngine:
 			codes.append(ExitCode(214, {"errorStr":errorStr}))
 		
 		# Sympy does not know where ie a \log ends
-		except sp.SympifyError:
+		except SympifyError:
 			codes.append(ExitCode(213))
 		
 		# General Error
-		except:
+		except Exception as e:
 			codes.append(ExitCode(210))
+			print(e)
 		
 		return codes
 	
@@ -237,6 +244,7 @@ class PoUEngine:
 		
 		# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 		for i, var in enumerate(self.input.variables):
+			if var.name == r"\pi": var.value = r"\pi" #TODO Fix
 			PoU_Val = PoU_Val.replace(r"\Delta " + self.nAdd+chr(i+97), r"\cdot" + to_str_safe(var.uncert) + r" \mathrm{" + str(var.unit) + "}")
 			PoU_Val = PoU_Val.replace(self.nAdd+chr(i+97), to_str_safe(var.value) + r" \mathrm{" + str(var.unit) + "}")
 		
