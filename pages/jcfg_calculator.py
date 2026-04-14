@@ -1,6 +1,6 @@
 # Streamlit-App for JCFG Propagation of Uncertainty Calculator
 
-__version__ = "2.0.2-beta"
+__version__ = "2.1.0-beta"
 
 import pandas as pd
 import streamlit as st
