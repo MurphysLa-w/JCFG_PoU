@@ -6,8 +6,8 @@ from typing import List
 from dataclasses import dataclass
 from .utils import to_str_safe
 from .exit_codes import ExitCode
-from sympy import pi, N, symbols, latex, simplify, diff, SympifyError
-from sympy.parsing.latex import parse_latex
+from .latex import parse_latex		# Copied from sympy.parsing.latex
+from sympy import symbols, latex, simplify, diff, SympifyError
 from lark.exceptions import UnexpectedEOF, UnexpectedCharacters
 
 
@@ -123,11 +123,6 @@ class PoUEngine:
 		
 		# Normalize Expression (Replace Names wth symbols, remove unknown symbols)
 		self.norm_expr = self.expression
-		
-		#TODO This is a hotfix to get pi available until the lark grammar has been made accessible in the webapp
-		if r"\pi" in self.norm_expr:
-			self.input.variables.append(Variable(name=r"\pi", unit="", value=N(pi), uncert=0, const=True))
-		
 		for i, var in enumerate(self.input.variables):
 			self.norm_expr = self.norm_expr.replace(var.name, r"\mathit{" + self.nAdd + chr(i+97) + "}")
 		self.norm_expr = self.norm_expr.replace(r"\left(", "(").replace(r"\right)", ")")	#Replace \left( \right) with ()
@@ -244,7 +239,6 @@ class PoUEngine:
 		
 		# Replace var names with their values and units, same for the uncertainties (preceeded by \Delta)
 		for i, var in enumerate(self.input.variables):
-			if var.name == r"\pi": var.value = r"\pi" #TODO Fix
 			PoU_Val = PoU_Val.replace(r"\Delta " + self.nAdd+chr(i+97), r"\cdot" + to_str_safe(var.uncert) + r" \mathrm{" + str(var.unit) + "}")
 			PoU_Val = PoU_Val.replace(self.nAdd+chr(i+97), to_str_safe(var.value) + r" \mathrm{" + str(var.unit) + "}")
 		
@@ -272,6 +266,8 @@ class PoUEngine:
 				self.cumul_uncert += (deriv * var.uncert)**2
 			self.cumul_uncert = self.cumul_uncert**0.5		#get sqrt
 			self.result_str = to_str_safe(self.cumul_uncert.subs(self.numeric_dict))
+			self.result_str = self.result_str.replace(".", ",").replace("**0,5", "^{0,5}").replace("**", "^").replace("*", r"\cdot")
+			
 			self.calcExpr_str = str(self.cumul_uncert)
 			for i, var in enumerate(self.input.variables):
 				self.calcExpr_str = self.calcExpr_str.replace(self.nAdd+chr(i+97), "["+var.name+"]")
@@ -286,8 +282,8 @@ class PoUEngine:
 			if "Tree" in self.result_str:
 				codes.append(ExitCode(123, {"solutions":str(self.result_str.replace("Tree('_ambig', ","")[:-1])}))
 			else:
-				latex_display = r"\begin{equation} \Delta " + self.res_name + r" = \pm " + self.result_str.replace(".", ",") + r" \notag \end{equation}"
-				latex_code = r"\begin{equation} \Delta " + self.res_name + r" = \pm " + self.result_str.replace(".", ",") + r"\end{equation}"
+				latex_display = r"\begin{equation} \Delta " + self.res_name + r" = \pm " + self.result_str + r" \notag \end{equation}"
+				latex_code = r"\begin{equation} \Delta " + self.res_name + r" = \pm " + self.result_str + r"\end{equation}"
 		
 		# General Error
 		except:
