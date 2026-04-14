@@ -2,6 +2,12 @@
 	Version Changelog
 #########################
 
+2.1.0
+	Added the LaTeX-Lark parser from Sympy to core
+	Added the possibility to change grammars
+	Added full support of pi
+	Changes in final result style
+	
 2.0.2
 	Added support for pi
 	
