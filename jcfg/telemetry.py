@@ -14,7 +14,7 @@ def submit_bug_report(bug_kind, bug_desc, bug_email, current_state):
 		"entry.320798035"	: bug_kind,
 		"entry.1002995150"	: bug_desc,
 		"entry.519864065"	: bug_email,
-		"entry.74602100"	: current_state
+		"entry.74602100"	: str(current_state)
 		}
 	
 	# Posting it to the form
